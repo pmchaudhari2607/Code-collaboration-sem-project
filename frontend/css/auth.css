@@ -1,0 +1,36 @@
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+}
+.auth-brand {
+  flex: 1;
+  background-color: var(--bg-sidebar);
+  color: #fff;
+  padding: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-form-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background-color: var(--bg-app);
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+  }
+  .auth-brand {
+    padding: 32px;
+    text-align: center;
+  }
+  .auth-brand ul {
+    text-align: left;
+    max-width: 250px;
+    margin: 32px auto 0 auto;
+  }
+}

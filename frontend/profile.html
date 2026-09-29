@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">My Profile</h1>
+            <p class="page-subtitle">Manage your personal information.</p>
+          </div>
+        </div>
+        
+        <div class="card" style="max-width:600px;">
+           <div class="d-flex align-items-center gap-3 mb-4">
+              <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:bold;"></div>
+              <div>
+                 <h2 class="m-0" id="prof-name">Name</h2>
+                 <p class="text-muted m-0" id="prof-user">@username</p>
+              </div>
+           </div>
+           
+           <form id="form-profile">
+              <div class="form-group">
+                 <label class="form-label">Full Name</label>
+                 <input type="text" id="prof-input-name" class="form-control" required>
+              </div>
+              <div class="form-group">
+                 <label class="form-label">Email</label>
+                 <input type="email" id="prof-input-email" class="form-control" required>
+              </div>
+              <div class="form-group">
+                 <label class="form-label">Bio</label>
+                 <textarea id="prof-input-bio" class="form-control" rows="3"></textarea>
+              </div>
+              <div class="mt-4">
+                 <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

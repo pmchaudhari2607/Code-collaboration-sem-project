@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Editor - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content" style="display:none;" id="app-main">
+      <div class="editor-layout">
+        
+        <!-- EDITOR MAIN -->
+        <div class="editor-main">
+           <div class="editor-toolbar">
+              <div class="d-flex align-items-center gap-2" style="overflow:hidden; white-space:nowrap;">
+                 <a href="projects.html" class="text-muted" style="text-decoration:none;">Projects</a>
+                 <span class="text-muted">/</span>
+                 <a href="#" id="crumb-project" class="text-muted" style="text-decoration:none;">...</a>
+                 <span class="text-muted">/</span>
+                 <span class="text-primary text-bold" id="crumb-file">...</span>
+                 <span id="badge-lang"></span>
+                 <span id="badge-version"></span>
+                 <span id="badge-role"></span>
+              </div>
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                 <span id="unsaved-dot" style="display:none; width:8px; height:8px; background:var(--warning-text); border-radius:50%;" title="Unsaved changes"></span>
+                 <button class="btn btn-secondary" id="btn-save" disabled>Save</button>
+                 <button class="btn btn-primary" id="btn-save-new" disabled>Save as New Version</button>
+              </div>
+           </div>
+           
+           <div id="read-only-banner" style="display:none; background-color:var(--warning-bg); color:var(--warning-text); padding:8px 16px; font-size:13px; text-align:center;">
+              <span id="banner-text">Viewing Version X (read-only).</span>
+              <a href="#" id="btn-return-current" style="margin-left:8px; font-weight:600; text-decoration:underline;">Return to current</a>
+           </div>
+
+           <div class="editor-container" id="editor-container">
+              <textarea id="code-textarea" style="display:none;"></textarea>
+              <div id="read-only-overlay" class="read-only-overlay" style="display:none;"></div>
+           </div>
+        </div>
+        
+        <!-- SIDE PANEL -->
+        <div class="editor-panel">
+           <div class="panel-header" style="padding:0;">
+              <div class="tabs mb-0" id="panel-tabs" style="border:none; padding: 0 16px;">
+                 <div class="tab active" data-tab="reviews" style="padding: 16px 4px;">Reviews</div>
+                 <div class="tab" data-tab="versions" style="padding: 16px 4px;">Versions</div>
+                 <div class="tab" data-tab="info" style="padding: 16px 4px;">Info</div>
+              </div>
+           </div>
+           
+           <div class="panel-content" id="panel-reviews">
+              <div id="add-review-container" class="card mb-3" style="display:none; padding:16px;">
+                 <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="m-0" id="add-review-line">Line N</h4>
+                    <button class="btn-ghost" style="padding:2px;" onclick="closeAddReview()">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                 </div>
+                 <div style="background:var(--bg-app); padding:8px; font-family:var(--font-mono); font-size:12px; margin-bottom:12px; border-radius:4px; overflow-x:auto; white-space:pre;" id="add-review-code"></div>
+                 
+                 <form id="form-add-review">
+                    <div class="segment-control mb-2" id="review-type-segments">
+                       <div class="segment-btn active" data-val="comment">Comment</div>
+                       <div class="segment-btn" data-val="suggestion">Suggestion</div>
+                       <div class="segment-btn" data-val="bug">Bug</div>
+                       <div class="segment-btn" data-val="improvement">Improvement</div>
+                    </div>
+                    <textarea id="review-comment" class="form-control mb-2" rows="3" required minlength="3" placeholder="Enter feedback..."></textarea>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Submit Review</button>
+                 </form>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                 <div class="text-small text-muted" id="reviews-count">0 Reviews</div>
+                 <label class="text-small d-flex align-items-center gap-1" style="cursor:pointer;">
+                    <input type="checkbox" id="toggle-closed-reviews"> Show closed
+                 </label>
+              </div>
+              
+              <div id="reviews-list"></div>
+           </div>
+           
+           <div class="panel-content" id="panel-versions" style="display:none;">
+              <div id="versions-list"></div>
+           </div>
+           
+           <div class="panel-content" id="panel-info" style="display:none;">
+              <div class="mb-3">
+                 <div class="text-small text-muted">File Name</div>
+                 <div class="text-bold" id="info-name">-</div>
+              </div>
+              <div class="mb-3">
+                 <div class="text-small text-muted">Language</div>
+                 <div class="text-bold" id="info-lang">-</div>
+              </div>
+              <div class="mb-3">
+                 <div class="text-small text-muted">Created By</div>
+                 <div class="text-bold" id="info-creator">-</div>
+              </div>
+              <div class="mb-3">
+                 <div class="text-small text-muted">Created At</div>
+                 <div class="text-bold" id="info-created">-</div>
+              </div>
+              <div class="mb-3">
+                 <div class="text-small text-muted">Last Updated</div>
+                 <div class="text-bold" id="info-updated">-</div>
+              </div>
+           </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Save as New Version Modal -->
+  <div class="modal-backdrop" id="modal-save-version">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Save as New Version</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-save-version')">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="form-save-version">
+        <div class="modal-body">
+          <p class="mb-3">This will create a permanent, immutable snapshot of the current code. Reviews can be attached specifically to this version.</p>
+          <div class="form-group">
+            <label class="form-label">Version Note (Optional)</label>
+            <input type="text" id="version-note" class="form-control" placeholder="e.g. Fixed array index out of bounds">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-save-version')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Version</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div class="modal-backdrop" id="modal-create-task">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Task from Review</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-create-task')">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="form-create-task">
+        <div class="modal-body">
+          <input type="hidden" id="task-review-id">
+          <div class="form-group">
+            <label class="form-label">Title *</label>
+            <input type="text" id="task-title" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="task-desc" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+             <div class="form-group" style="flex:1;">
+               <label class="form-label">Assignee</label>
+               <select id="task-assignee" class="form-control">
+                  <option value="">Unassigned</option>
+               </select>
+             </div>
+             <div class="form-group" style="flex:1;">
+               <label class="form-label">Priority</label>
+               <select id="task-priority" class="form-control">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+               </select>
+             </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" id="task-due" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-create-task')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/editor.js"></script>
+</body>
+</html>

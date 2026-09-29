@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/projects.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Projects</h1>
+            <p class="page-subtitle">Manage your code review projects.</p>
+          </div>
+          <button class="btn btn-primary" onclick="UI.openModal('modal-create-project')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create Project
+          </button>
+        </div>
+        
+        <div class="projects-toolbar mb-4">
+          <div class="tabs mb-0" style="border:none;">
+            <div class="tab active" data-filter="all">All</div>
+            <div class="tab" data-filter="owned">Owned by me</div>
+            <div class="tab" data-filter="shared">Shared with me</div>
+            <div class="tab" data-filter="public">Public</div>
+          </div>
+          <div class="d-flex gap-2">
+            <input type="text" id="project-search" class="form-control" placeholder="Search projects..." style="width:250px;">
+          </div>
+        </div>
+        
+        <div id="projects-grid" class="projects-grid">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div class="modal-backdrop" id="modal-create-project">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Project</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-create-project')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="form-create-project">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Project Name *</label>
+            <input type="text" id="proj-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="proj-desc" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary Language</label>
+            <select id="proj-lang" class="form-control">
+              <option value="Mixed">Mixed</option>
+              <option value="C">C</option>
+              <option value="Java">Java</option>
+              <option value="Python">Python</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Visibility</label>
+            <div class="d-flex gap-2 mt-1">
+              <label class="card" style="flex:1; cursor:pointer; padding:16px;">
+                <input type="radio" name="proj-vis" value="public" checked>
+                <div class="text-bold mt-1">Public</div>
+                <div class="text-small text-muted">Anyone can view the code and leave reviews.</div>
+              </label>
+              <label class="card" style="flex:1; cursor:pointer; padding:16px;">
+                <input type="radio" name="proj-vis" value="private">
+                <div class="text-bold mt-1">Private</div>
+                <div class="text-small text-muted">Only invited members can view and review.</div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-create-project')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/projects.js"></script>
+</body>
+</html>

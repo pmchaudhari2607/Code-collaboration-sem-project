@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="welcome-title">Welcome back</h1>
+            <p class="page-subtitle">Here's what's happening with your projects today.</p>
+          </div>
+          <button class="btn btn-primary" id="btn-new-project">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            New Project
+          </button>
+        </div>
+
+        <div class="stats-grid mb-4">
+          <div class="card stat-card">
+            <div class="stat-icon" id="icon-stat1"></div>
+            <div class="stat-content">
+              <div class="stat-label">Total Projects</div>
+              <div class="stat-value" id="stat-projects">-</div>
+              <div class="stat-sub" id="stat-projects-sub">...</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" id="icon-stat2"></div>
+            <div class="stat-content">
+              <div class="stat-label">Code Files</div>
+              <div class="stat-value" id="stat-files">-</div>
+              <div class="stat-sub">Across accessible projects</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" id="icon-stat3"></div>
+            <div class="stat-content">
+              <div class="stat-label">Open Reviews</div>
+              <div class="stat-value" id="stat-reviews">-</div>
+              <div class="stat-sub">Awaiting resolution</div>
+            </div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" id="icon-stat4"></div>
+            <div class="stat-content">
+              <div class="stat-label">Pending Tasks</div>
+              <div class="stat-value" id="stat-tasks">-</div>
+              <div class="stat-sub">Tasks in progress or todo</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card" style="grid-column: span 2;">
+            <div class="card-header">
+              <h3 class="card-title">Recent Coding Activity</h3>
+            </div>
+            <div id="chart-container" style="height:250px; display:flex; align-items:flex-end; gap:8px; padding-top:20px; border-bottom: 1px solid var(--border);">
+            </div>
+            <div id="chart-labels" style="display:flex; gap:8px; margin-top:8px; justify-content: space-between; font-size:12px; color:var(--text-secondary);">
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Projects</h3>
+              <a href="projects.html" class="text-small">View all</a>
+            </div>
+            <div id="recent-projects" class="list-group"></div>
+          </div>
+
+          <div class="card" style="grid-column: span 2;">
+            <div class="card-header">
+              <h3 class="card-title">Upcoming Tasks</h3>
+              <a href="tasks.html" class="text-small">View all</a>
+            </div>
+            <div id="upcoming-tasks" class="list-group"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Activity</h3>
+            </div>
+            <div id="recent-activity" class="list-group"></div>
+          </div>
+        </div>
+
+        <div id="invitations-section" class="card mt-4" style="display:none;">
+          <div class="card-header">
+            <h3 class="card-title">Pending Invitations</h3>
+          </div>
+          <div id="pending-invitations" class="list-group"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

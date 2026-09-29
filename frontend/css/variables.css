@@ -1,0 +1,44 @@
+:root {
+  --bg-app: #F2F3FA;
+  --bg-sidebar: #0E1526;
+  --bg-card: #FFFFFF;
+  --accent: #6366F1;
+  --accent-hover: #4F52D9;
+  --accent-soft: #E9EAFC;
+  --accent-gradient: linear-gradient(180deg, #8B93F8, #5B63E0);
+  --text-primary: #1E2433;
+  --text-secondary: #6B7280;
+  --sidebar-text: #C7CCDA;
+  --sidebar-muted: #6B7386;
+  --border: #EDEEF3;
+  --success-bg: #DCFCE7;
+  --success-text: #15803D;
+  --danger-bg: #FEE2E2;
+  --danger-text: #B91C1C;
+  --warning-bg: #FEF3C7;
+  --warning-text: #B45309;
+  --info-bg: #E0F2FE;
+  --info-text: #0369A1;
+  
+  --radius-card: 14px;
+  --radius-btn: 8px;
+  --radius-pill: 9999px;
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-card-hover: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --transition-speed: 150ms;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+body.theme-dark {
+  --bg-app: #0B1020;
+  --bg-card: #161C2C;
+  --border: #252C40;
+  --text-primary: #E7EAF3;
+  --text-secondary: #98A2B8;
+  --accent-soft: #232A4D;
+  --sidebar-text: #C7CCDA;
+  --sidebar-muted: #6B7386;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

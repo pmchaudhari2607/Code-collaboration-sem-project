@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Details - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content" id="project-container" style="display:none;">
+        <div class="page-header">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <a href="projects.html" class="text-muted" style="text-decoration:none;">Projects</a>
+              <span class="text-muted">/</span>
+              <span class="text-primary" id="pd-name">Project Name</span>
+            </div>
+            <h1 class="page-title d-flex align-items-center gap-2" id="pd-title">
+              Loading...
+            </h1>
+            <p class="page-subtitle" id="pd-desc">...</p>
+          </div>
+          <div class="d-flex gap-2" id="pd-actions" style="display:none;">
+            <button class="btn btn-secondary" onclick="UI.openModal('modal-edit-project')"><span class="icon" data-icon="edit"></span> Edit Project</button>
+          </div>
+        </div>
+
+        <div class="tabs" id="project-tabs">
+          <div class="tab active" data-tab="overview">Overview</div>
+          <div class="tab" data-tab="files">Files</div>
+          <div class="tab" data-tab="reviews">Reviews</div>
+          <div class="tab" data-tab="members">Members</div>
+          <div class="tab" data-tab="tasks">Tasks</div>
+          <div class="tab" data-tab="activity">Activity</div>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div class="tab-pane active" id="tab-overview">
+           <div class="stats-grid mb-4">
+              <div class="card stat-card">
+                 <div class="stat-icon"><span class="icon" data-icon="file"></span></div>
+                 <div class="stat-content">
+                    <div class="stat-label">Files</div>
+                    <div class="stat-value" id="ov-files">-</div>
+                 </div>
+              </div>
+              <div class="card stat-card">
+                 <div class="stat-icon"><span class="icon" data-icon="messageSquare"></span></div>
+                 <div class="stat-content">
+                    <div class="stat-label">Open Reviews</div>
+                    <div class="stat-value" id="ov-reviews">-</div>
+                 </div>
+              </div>
+              <div class="card stat-card">
+                 <div class="stat-icon"><span class="icon" data-icon="users"></span></div>
+                 <div class="stat-content">
+                    <div class="stat-label">Members</div>
+                    <div class="stat-value" id="ov-members">-</div>
+                 </div>
+              </div>
+           </div>
+           
+           <div class="dashboard-grid">
+              <div class="card" style="grid-column: span 2;">
+                 <div class="card-header"><h3 class="card-title">Code Files</h3></div>
+                 <div id="ov-recent-files" class="list-group"></div>
+              </div>
+              <div class="card">
+                 <div class="card-header"><h3 class="card-title">Pending Tasks</h3></div>
+                 <div id="ov-recent-tasks" class="list-group"></div>
+              </div>
+           </div>
+        </div>
+
+        <!-- FILES TAB -->
+        <div class="tab-pane" id="tab-files" style="display:none;">
+           <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="m-0">Code Files</h3>
+              <button class="btn btn-primary" id="btn-add-file" style="display:none;" onclick="UI.openModal('modal-add-file')">
+                 <span class="icon" data-icon="plus"></span> Add File
+              </button>
+           </div>
+           <div class="card" style="padding:0; overflow:hidden;">
+              <table id="table-files">
+                 <thead>
+                    <tr>
+                       <th>Name</th>
+                       <th>Language</th>
+                       <th>Version</th>
+                       <th>Updated</th>
+                       <th>Author</th>
+                       <th>Reviews</th>
+                    </tr>
+                 </thead>
+                 <tbody></tbody>
+              </table>
+           </div>
+        </div>
+
+        <!-- REVIEWS TAB -->
+        <div class="tab-pane" id="tab-reviews" style="display:none;">
+           <div class="card" id="reviews-list"></div>
+        </div>
+
+        <!-- MEMBERS TAB -->
+        <div class="tab-pane" id="tab-members" style="display:none;">
+           <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="m-0">Project Members</h3>
+              <a href="team.html" class="btn btn-primary" id="btn-invite" style="display:none;">Invite Members</a>
+           </div>
+           <div class="card" style="padding:0; overflow:hidden;">
+              <table id="table-members">
+                 <thead>
+                    <tr>
+                       <th>User</th>
+                       <th>Role</th>
+                       <th>Status</th>
+                       <th>Action</th>
+                    </tr>
+                 </thead>
+                 <tbody></tbody>
+              </table>
+           </div>
+        </div>
+
+        <!-- TASKS TAB -->
+        <div class="tab-pane" id="tab-tasks" style="display:none;">
+           <div class="card" id="tasks-list"></div>
+        </div>
+
+        <!-- ACTIVITY TAB -->
+        <div class="tab-pane" id="tab-activity" style="display:none;">
+           <div class="card" id="activity-list"></div>
+        </div>
+      </div>
+      
+      <div id="error-container" style="display:none; padding:48px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Add File Modal -->
+  <div class="modal-backdrop" id="modal-add-file">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Code File</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-add-file')"><span class="icon" data-icon="x"></span></button>
+      </div>
+      <form id="form-add-file">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">File Name *</label>
+            <input type="text" id="file-name" class="form-control" required placeholder="e.g. main.c">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language</label>
+            <select id="file-lang" class="form-control">
+              <option value="C">C</option>
+              <option value="Java">Java</option>
+              <option value="Python">Python</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-file')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create File</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Project Modal -->
+  <div class="modal-backdrop" id="modal-edit-project">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Project</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-edit-project')"><span class="icon" data-icon="x"></span></button>
+      </div>
+      <form id="form-edit-project">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Project Name *</label>
+            <input type="text" id="edit-proj-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="edit-proj-desc" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Visibility</label>
+            <div class="d-flex gap-2 mt-1">
+              <label class="card" style="flex:1; cursor:pointer; padding:16px;">
+                <input type="radio" name="edit-proj-vis" value="public">
+                <div class="text-bold mt-1">Public</div>
+              </label>
+              <label class="card" style="flex:1; cursor:pointer; padding:16px;">
+                <input type="radio" name="edit-proj-vis" value="private">
+                <div class="text-bold mt-1">Private</div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-edit-project')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/project-details.js"></script>
+</body>
+</html>

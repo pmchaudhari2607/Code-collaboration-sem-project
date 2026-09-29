@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasks - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Tasks</h1>
+            <p class="page-subtitle">Track your action items across all projects.</p>
+          </div>
+        </div>
+        
+        <div class="card mb-4" style="padding:16px;">
+           <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex gap-2">
+                 <select id="filter-project" class="form-control" style="width:200px;"><option value="all">All Projects</option></select>
+                 <select id="filter-status" class="form-control" style="width:150px;">
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="all">All Statuses</option>
+                 </select>
+              </div>
+           </div>
+        </div>
+
+        <div class="card" style="padding:0; overflow:hidden;">
+           <table id="table-tasks">
+              <thead>
+                 <tr>
+                    <th style="width:40px;"></th>
+                    <th>Title</th>
+                    <th>Project</th>
+                    <th>Assignee</th>
+                    <th>Priority</th>
+                    <th>Due Date</th>
+                 </tr>
+              </thead>
+              <tbody></tbody>
+           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/tasks.js"></script>
+</body>
+</html>

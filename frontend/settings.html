@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - CodeReviewHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="main-content">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Settings</h1>
+            <p class="page-subtitle">Application preferences and configuration.</p>
+          </div>
+        </div>
+        
+        <div class="card" style="max-width:600px;">
+           <h3 class="mb-3">Appearance</h3>
+           <div class="list-item justify-content-between mb-4">
+              <div>
+                 <div class="text-bold">Dark Mode</div>
+                 <div class="text-small text-muted">Switch between light and dark themes.</div>
+              </div>
+              <label class="switch">
+                 <input type="checkbox" id="setting-dark-mode">
+                 <span class="slider"></span>
+              </label>
+           </div>
+           
+           <h3 class="mb-3">Notifications</h3>
+           <div class="list-item justify-content-between mb-2">
+              <div>
+                 <div class="text-bold">Email Notifications</div>
+                 <div class="text-small text-muted">Receive emails when you are mentioned.</div>
+              </div>
+              <label class="switch">
+                 <input type="checkbox" checked>
+                 <span class="slider"></span>
+              </label>
+           </div>
+           <div class="list-item justify-content-between mb-4">
+              <div>
+                 <div class="text-bold">Review Digests</div>
+                 <div class="text-small text-muted">Daily summary of open reviews.</div>
+              </div>
+              <label class="switch">
+                 <input type="checkbox">
+                 <span class="slider"></span>
+              </label>
+           </div>
+           
+           <h3 class="mb-3">Danger Zone</h3>
+           <div class="card" style="border-color:var(--danger-text); background-color:rgba(239,68,68,0.05);">
+              <div class="text-bold text-danger mb-1">Delete Account</div>
+              <div class="text-small text-muted mb-3">Permanently delete your account and all owned projects. This action cannot be undone.</div>
+              <button class="btn btn-danger" onclick="alert('This action is disabled in the demo.')">Delete Account</button>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border);
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--accent);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+  </style>
+
+  <script src="js/icons.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+       const darkModeToggle = document.getElementById('setting-dark-mode');
+       darkModeToggle.checked = document.body.classList.contains('theme-dark');
+       
+       darkModeToggle.addEventListener('change', (e) => {
+          const isDark = e.target.checked;
+          if (isDark) {
+             document.body.classList.add('theme-dark');
+             localStorage.setItem('crh_theme', 'dark');
+          } else {
+             document.body.classList.remove('theme-dark');
+             localStorage.setItem('crh_theme', 'light');
+          }
+          const topbarToggle = document.getElementById('btn-theme-toggle');
+          if (topbarToggle) topbarToggle.innerHTML = isDark ? window.icon('sun') : window.icon('moon');
+       });
+    });
+  </script>
+</body>
+</html>
