@@ -1,6 +1,7 @@
 const _pageRender = async () => {
     const projects = await Store.getProjects();
     const filterProj = document.getElementById('filter-project');
+    filterProj.innerHTML = '<option value="all">All Projects</option>';
     projects.forEach(p => {
        const opt = document.createElement('option');
        opt.value = p.id;
@@ -48,8 +49,8 @@ const _pageRender = async () => {
         }
     };
     
-    filterProj.addEventListener('change', loadReviews);
-    document.getElementById('filter-status').addEventListener('change', loadReviews);
+    filterProj.onchange = loadReviews;
+    document.getElementById('filter-status').onchange = loadReviews;
     
     loadReviews();
 };

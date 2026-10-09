@@ -1,9 +1,9 @@
 const Layout = {
   init: async () => {
     const isAuthPage = window.location.pathname.includes('login') || window.location.pathname.includes('register');
-    const currentUser = Store.getCurrentUserId();
+    const hasToken = !!Store.token;
     
-    if (!isAuthPage && !currentUser) {
+    if (!isAuthPage && !hasToken) {
       window.location.href = 'login.html';
       return;
     }
@@ -52,7 +52,7 @@ const Layout = {
           <a href="team.html" class="nav-item ${location.pathname.includes('team')?'active':''}">${window.icon ? window.icon('users') : window.icon('users')} <span>Team</span></a>
           <a href="analytics.html" class="nav-item ${location.pathname.includes('analytics')?'active':''}">${window.icon ? window.icon('pieChart') : window.icon('pieChart')} <span>Analytics</span></a>
           <a href="calendar.html" class="nav-item ${location.pathname.includes('calendar')?'active':''}">${window.icon ? window.icon('calendar') : window.icon('calendar')} <span>Calendar</span></a>
-          <a href="messages.html" class="nav-item ${location.pathname.includes('messages')?'active':''} disabled" title="Soon">${window.icon ? window.icon('messageSquare') : window.icon('messageSquare')} <span>Messages</span> <span class="badge badge-neutral" style="margin-left:auto;font-size:10px;">Soon</span></a>
+          <a href="messages.html" class="nav-item ${location.pathname.includes('messages')?'active':''}">${window.icon ? window.icon('messageSquare') : window.icon('messageSquare')} <span>Messages</span></a>
         </div>
         <div>
           <div class="nav-group-title">Account</div>
@@ -98,12 +98,13 @@ const Layout = {
              <span id="topbar-notif-badge" style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--danger-text); border-radius:50%; display:none;"></span>
           </button>
         </div>
+        ${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? `
         <div class="d-flex align-items-center gap-1" style="border-left:1px solid var(--border); padding-left:16px;">
           <span class="text-small text-muted">Acting as:</span>
           <select id="acting-as-select" class="form-control" style="width:140px; padding:6px; font-size:13px;">
             ${userOptions}
           </select>
-        </div>
+        </div>` : ''}
         ${UI.getAvatarHtml(user.full_name)}
       </div>
     `;
@@ -144,12 +145,12 @@ const Layout = {
     });
     
     document.getElementById('acting-as-select')?.addEventListener('change', async (e) => {
-      Store.setCurrentUserId(e.target.value);
-      await Layout.renderShell();
-      Layout.bindEvents(); // rebind events for new topbar
-      Layout.updateNotificationsBadge();
-      if (window.hydrateIcons) window.hydrateIcons();
-      document.dispatchEvent(new Event('crh_user_changed'));
+      try {
+          await Store.devImpersonate(e.target.value);
+          window.location.reload();
+      } catch (err) {
+          console.error('Dev impersonation failed', err);
+      }
     });
     
     document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {

@@ -217,7 +217,7 @@ const _pageRender = async () => {
   
   // Tab Navigation
   document.querySelectorAll('#project-tabs .tab').forEach(tab => {
-     tab.addEventListener('click', (e) => {
+     tab.onclick = (e => {
         document.querySelectorAll('#project-tabs .tab').forEach(t => t.classList.remove('active'));
         e.target.classList.add('active');
         
@@ -234,7 +234,7 @@ const _pageRender = async () => {
   });
 
   // Edit Project
-  document.getElementById('form-edit-project').addEventListener('submit', async (e) => {
+  document.getElementById('form-edit-project').onsubmit = async (e) => {
      e.preventDefault();
      const btn = e.target.querySelector('button[type="submit"]');
      btn.disabled = true;
@@ -257,10 +257,10 @@ const _pageRender = async () => {
        btn.disabled = false;
        btn.textContent = 'Save Changes';
      }
-  });
+  };
 
   // Add File
-  document.getElementById('form-add-file').addEventListener('submit', async (e) => {
+  document.getElementById('form-add-file').onsubmit = async (e) => {
      e.preventDefault();
      const btn = e.target.querySelector('button[type="submit"]');
      btn.disabled = true;
@@ -288,7 +288,7 @@ const _pageRender = async () => {
        btn.disabled = false;
        btn.textContent = 'Create File';
      }
-  });
+  };
   
   window.removeMember = async (userId, name) => {
       const confirmed = await UI.confirmDialog('Remove Member', `Are you sure you want to remove ${name} from this project?`, 'Remove', 'danger');

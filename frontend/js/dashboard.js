@@ -48,9 +48,11 @@ const _pageRender = async () => {
   } else {
     taskContainer.innerHTML = pending.map(t => {
       const isOverdue = new Date(t.due_date) < new Date();
+      const project = projects.find(p => p.id === t.project_id);
+      const canEdit = project && (project.userRole === 'owner' || project.userRole === 'collaborator');
       return `
       <div class="list-item">
-        <input type="checkbox" style="cursor:pointer;" onchange="completeTask('${t.id}', this)">
+        <input type="checkbox" style="cursor:pointer;" ${canEdit ? '' : 'disabled title="You do not have permission to edit this task"'} onchange="completeTask('${t.id}', this)">
         <div style="flex:1; min-width:0;">
           <div class="text-bold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(t.title)}</div>
           <div class="text-small text-muted">${Utils.escapeHtml(t.projectName)}</div>
@@ -64,7 +66,7 @@ const _pageRender = async () => {
   }
   
   // Recent Activity
-  const activity = await Store.getRecentActivity();
+  const activity = await Store.getDashboardActivity();
   const actContainer = document.getElementById('recent-activity');
   if (activity.length === 0) {
     UI.renderEmptyState('recent-activity', 'No activity', 'Start working on projects.', window.icon('clock'));
@@ -123,9 +125,9 @@ const _pageRender = async () => {
   chartContainer.innerHTML = html;
   labelsContainer.innerHTML = labelsHtml;
   
-  document.getElementById('btn-new-project').addEventListener('click', () => {
+  document.getElementById('btn-new-project').onclick = () => {
       window.location.href = 'projects.html?create=true';
-  });
+  };
 };
 document.addEventListener('DOMContentLoaded', _pageRender);
 document.addEventListener('crh_user_changed', _pageRender);
@@ -138,7 +140,7 @@ window.completeTask = async (id, cb) => {
 };
 
 window.respondInvite = async (id, accept) => {
-   await Store.respondInvitation(id, accept);
+   await Store.respondToInvitation(id, accept);
    UI.toast(accept ? 'Invitation accepted' : 'Invitation rejected', 'success');
    document.dispatchEvent(new Event('crh_user_changed'));
 };

@@ -1,6 +1,7 @@
 const _pageRender = async () => {
     const projects = await Store.getProjects();
     const filterProj = document.getElementById('filter-project');
+    filterProj.innerHTML = '<option value="all">All Projects</option>';
     projects.forEach(p => {
        const opt = document.createElement('option');
        opt.value = p.id;
@@ -32,10 +33,12 @@ const _pageRender = async () => {
             tbody.innerHTML = tasks.map(t => {
                const isDone = t.status === 'completed';
                const isOverdue = !isDone && new Date(t.due_date) < new Date();
+               const project = projects.find(p => p.id === t.project_id);
+               const canEdit = project && (project.userRole === 'owner' || project.userRole === 'collaborator');
                return `
                <tr style="${isDone ? 'opacity:0.6;' : ''}">
                   <td>
-                    <input type="checkbox" style="cursor:pointer;" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)">
+                    <input type="checkbox" style="cursor:pointer;" ${isDone ? 'checked' : ''} ${canEdit ? '' : 'disabled title="You do not have permission to edit this task"'} onchange="toggleTask('${t.id}', this.checked)">
                   </td>
                   <td class="text-bold" style="${isDone ? 'text-decoration:line-through;' : ''}">${Utils.escapeHtml(t.title)}</td>
                   <td>${Utils.escapeHtml(t.projectName)}</td>
@@ -49,8 +52,8 @@ const _pageRender = async () => {
         }
     };
     
-    filterProj.addEventListener('change', loadTasks);
-    document.getElementById('filter-status').addEventListener('change', loadTasks);
+    filterProj.onchange = loadTasks;
+    document.getElementById('filter-status').onchange = loadTasks;
     
     window.toggleTask = async (id, isDone) => {
         try {
@@ -59,6 +62,7 @@ const _pageRender = async () => {
             loadTasks();
         } catch(e) {
             UI.toast(e.message, 'error');
+            loadTasks(); // revert visually
         }
     };
     

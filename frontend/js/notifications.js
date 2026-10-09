@@ -36,19 +36,16 @@ const _pageRender = async () => {
    };
    
    window.respondInvite = async (id, accept) => {
-       await Store.respondInvitation(id, accept);
+       await Store.respondToInvitation(id, accept);
        UI.toast(accept ? 'Invitation accepted' : 'Invitation rejected', 'success');
        document.dispatchEvent(new Event('crh_user_changed'));
    };
    
-   document.getElementById('btn-mark-all').addEventListener('click', async () => {
-      const notifs = await Store.getNotifications();
-      for(const n of notifs) {
-         if(!n.is_read) await Store.markNotificationRead(n.id);
-      }
+   document.getElementById('btn-mark-all').onclick = async () => {
+      await Store.markAllNotificationsRead();
       loadNotifs();
       if(Layout && Layout.updateNotificationsBadge) Layout.updateNotificationsBadge();
-   });
+   };
    
    loadNotifs();
 };

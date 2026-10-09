@@ -12,21 +12,19 @@ const _pageRender = async () => {
     document.getElementById('prof-input-email').value = user.email;
     document.getElementById('prof-input-bio').value = user.bio || '';
     
-    document.getElementById('form-profile').addEventListener('submit', async (e) => {
+    document.getElementById('form-profile').onsubmit = async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
         btn.textContent = 'Saving...';
         
         try {
-            const users = await Store.getUsers();
-            const u = users.find(u => u.id === user.id);
-            if(u) {
-                u.full_name = document.getElementById('prof-input-name').value;
-                u.email = document.getElementById('prof-input-email').value;
-                u.bio = document.getElementById('prof-input-bio').value;
-                Store.setStorage('crh_users', users);
-            }
+            const data = {
+                full_name: document.getElementById('prof-input-name').value,
+                email: document.getElementById('prof-input-email').value,
+                bio: document.getElementById('prof-input-bio').value
+            };
+            await Store.updateCurrentUserProfile(data);
             UI.toast('Profile updated', 'success');
             setTimeout(() => window.location.reload(), 1000);
         } catch(err) {
@@ -34,7 +32,7 @@ const _pageRender = async () => {
             btn.disabled = false;
             btn.textContent = 'Save Changes';
         }
-    });
+    };
 };
 document.addEventListener('DOMContentLoaded', _pageRender);
 document.addEventListener('crh_user_changed', _pageRender);

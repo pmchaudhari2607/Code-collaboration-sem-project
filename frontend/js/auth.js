@@ -5,7 +5,7 @@ const _pageRender = () => {
 
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
       const identifier = document.getElementById('login-identifier').value.trim();
       const password = document.getElementById('login-password').value;
@@ -25,18 +25,17 @@ const _pageRender = () => {
         btn.disabled = false;
         btn.innerHTML = 'Sign In';
       }
-    });
+    };
     
-    document.getElementById('demo-login').addEventListener('click', (e) => {
+    document.getElementById('demo-login').onclick = (e) => {
       e.preventDefault();
       document.getElementById('login-identifier').value = 'prasanna';
       document.getElementById('login-password').value = 'password';
-      // Mock-only: we accept any password since mock-data has 'password'
-    });
+    };
     
     const toggleBtn = document.getElementById('btn-toggle-password');
     if(toggleBtn) {
-       toggleBtn.addEventListener('click', () => {
+       toggleBtn.onclick = () => {
          const pwInput = document.getElementById('login-password');
          if(pwInput.type === 'password') {
            pwInput.type = 'text';
@@ -45,13 +44,13 @@ const _pageRender = () => {
            pwInput.type = 'password';
            toggleBtn.textContent = 'Show';
          }
-       });
+       };
     }
   }
   
   const registerForm = document.getElementById('register-form');
   if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
+    registerForm.onsubmit = async (e) => {
       e.preventDefault();
       const name = document.getElementById('reg-name').value.trim();
       const username = document.getElementById('reg-username').value.trim();
@@ -72,7 +71,7 @@ const _pageRender = () => {
       btn.innerHTML = 'Signing Up...';
       
       try {
-        await Store.register({ full_name: name, username, email, password }); // Mock-only: storing plaintext password
+        await Store.register({ full_name: name, username, email, password, confirm_password: confirm }); // Mock-only: storing plaintext password
         UI.toast('Account created successfully!', 'success');
         setTimeout(() => {
           window.location.href = 'login.html';
@@ -83,7 +82,7 @@ const _pageRender = () => {
         btn.disabled = false;
         btn.innerHTML = 'Sign Up';
       }
-    });
+    };
   }
 };
 document.addEventListener('DOMContentLoaded', _pageRender);

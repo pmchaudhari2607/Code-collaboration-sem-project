@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', async () => {
      return;
   }
   
+  const currentUser = await Store.getCurrentUser();
+  const currentUserId = currentUser?.id;
+
   let fileData;
   try {
      fileData = await Store.getFile(fileId);
@@ -18,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const project = await Store.getProject(fileData.project_id);
   
-  document.getElementById('app-main').style.display = 'block';
+  document.getElementById('app-main').style.display = 'flex';
   
   document.getElementById('crumb-project').textContent = project.name;
   document.getElementById('crumb-project').href = `project-details.html?id=${project.id}`;
@@ -55,9 +58,10 @@ document.addEventListener('DOMContentLoaded', async () => {
      gutters: ["CodeMirror-linenumbers", "review-gutter"]
   });
   
-  editor.setValue(activeVersion.code_content);
+  editor.setValue(activeVersion.code);
+  setTimeout(() => editor.refresh(), 50);
   
-  let originalCode = activeVersion.code_content;
+  let originalCode = activeVersion.code;
   
   if (isLatestVersion && project.userRole !== 'viewer') {
      editor.on('change', () => {
@@ -71,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      document.getElementById('btn-save').addEventListener('click', async () => {
         const code = editor.getValue();
         document.getElementById('btn-save').disabled = true;
-        await Store.updateFile(fileId, { current_code: code });
+        await Store.saveFileCode(fileId, code);
         originalCode = code;
         document.getElementById('unsaved-dot').style.display = 'none';
         document.getElementById('btn-save').disabled = true;
@@ -92,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.disabled = true;
         
         try {
-           await Store.createVersion(fileId, code, note);
+           await Store.saveVersion(fileId, { code, note });
            UI.toast('New version created', 'success');
            setTimeout(() => { window.location.reload(); }, 500);
         } catch(err) {
@@ -115,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
            ${v.id === activeVersion.id ? '<span class="badge badge-accent">Viewing</span>' : ''}
         </div>
         <div class="text-small text-muted mb-1">${Utils.formatDate(v.created_at)} by ${Utils.escapeHtml(v.creatorName)}</div>
-        ${v.commit_message ? `<div class="text-small">${Utils.escapeHtml(v.commit_message)}</div>` : ''}
+        ${v.note ? `<div class="text-small">${Utils.escapeHtml(v.note)}</div>` : ''}
      </a>
   `).join('');
 
@@ -157,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <p class="text-small m-0 mb-2" style="line-height:1.4;">${Utils.escapeHtml(r.comment)}</p>
           
           <div class="d-flex gap-1" style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
-             ${r.status === 'open' && (Store.getCurrentUserId() === r.reviewer_id || project.userRole === 'owner') ? 
+             ${r.status === 'open' && (currentUserId === r.reviewer_id || project.userRole === 'owner') ? 
                `<button class="btn btn-ghost text-small text-success" style="flex:1;" onclick="event.stopPropagation(); resolveReview('${r.id}')">${window.icon('check')} Resolve</button>` : ''}
              
              ${r.status === 'open' && project.userRole !== 'viewer' ? 
@@ -209,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
   
   window.resolveReview = async (id) => {
-     await Store.updateReviewStatus(id, 'resolved');
+     await Store.setReviewStatus(id, 'resolved');
      UI.toast('Review resolved', 'success');
      loadReviews();
   };
@@ -311,10 +315,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.disabled = true;
       
       try {
-         await Store.createTask(project.id, {
-            title, description: desc, assignee_id: assigneeId, priority, due_date: due
+         await Store.createTask({
+            project_id: project.id, title, description: desc, assigned_to: assigneeId, priority, due_date: due, review_id: revId
          });
-         await Store.updateReviewStatus(revId, 'resolved');
+         await Store.setReviewStatus(revId, 'resolved');
          UI.toast('Task created and review resolved', 'success');
          UI.closeModal('modal-create-task');
          loadReviews();

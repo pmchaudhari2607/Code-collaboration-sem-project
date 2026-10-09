@@ -5,6 +5,9 @@ const _pageRender = async () => {
      UI.openModal('modal-create-project');
   }
 
+  let currentUser = await Store.getCurrentUser();
+  let uid = currentUser?.id;
+
   let projects = [];
   try {
      projects = await Store.getProjects();
@@ -17,7 +20,6 @@ const _pageRender = async () => {
 
   const renderProjects = () => {
     const grid = document.getElementById('projects-grid');
-    const uid = Store.getCurrentUserId();
     
     let filtered = projects.filter(p => {
        if (searchQuery && !p.name.toLowerCase().includes(searchQuery) && !p.description.toLowerCase().includes(searchQuery)) return false;
@@ -64,7 +66,7 @@ const _pageRender = async () => {
   renderProjects();
 
   document.querySelectorAll('.tab').forEach(tab => {
-     tab.addEventListener('click', (e) => {
+     tab.onclick = (e => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         e.target.classList.add('active');
         currentFilter = e.target.getAttribute('data-filter');
@@ -72,12 +74,12 @@ const _pageRender = async () => {
      });
   });
 
-  document.getElementById('project-search').addEventListener('input', (e) => {
+  document.getElementById('project-search').oninput = (e => {
      searchQuery = e.target.value.toLowerCase();
      renderProjects();
   });
 
-  document.getElementById('form-create-project').addEventListener('submit', async (e) => {
+  document.getElementById('form-create-project').onsubmit = async (e) => {
      e.preventDefault();
      const btn = e.target.querySelector('button[type="submit"]');
      btn.disabled = true;
@@ -102,7 +104,7 @@ const _pageRender = async () => {
        btn.disabled = false;
        btn.textContent = 'Create Project';
      }
-  });
+  };
 };
 document.addEventListener('DOMContentLoaded', _pageRender);
 document.addEventListener('crh_user_changed', _pageRender);

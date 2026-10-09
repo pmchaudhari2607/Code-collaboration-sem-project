@@ -21,10 +21,23 @@
             <p class="page-subtitle">Direct messages with team members.</p>
           </div>
         </div>
-        <div class="card" style="padding:48px; text-align:center;">
-           <div style="font-size:48px; color:var(--text-muted); margin-bottom:16px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-           <h3>Direct Messaging Coming Soon</h3>
-           <p class="text-muted">Real-time chat is in development.</p>
+        <div class="card" style="padding:0; display:flex; height: 60vh;">
+           <div style="width: 250px; border-right: 1px solid var(--border); display:flex; flex-direction:column;">
+               <div style="padding:16px; font-weight:bold; border-bottom:1px solid var(--border);">Projects</div>
+               <div id="msg-projects-list" style="overflow-y:auto; flex:1;"></div>
+           </div>
+           <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+               <div id="msg-header" style="padding:16px; border-bottom:1px solid var(--border); font-weight:bold;">Select a project</div>
+               <div id="msg-content" style="flex:1; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
+                    <div class="text-center text-muted mt-4">Select a project to view messages</div>
+               </div>
+               <div id="msg-form-container" style="padding:16px; border-top:1px solid var(--border); display:none;">
+                   <form id="msg-form" style="display:flex; gap:8px;">
+                       <input type="text" id="msg-input" class="form-control" style="flex:1;" placeholder="Type a message..." required autocomplete="off">
+                       <button type="submit" class="btn btn-primary" id="msg-send-btn">Send</button>
+                   </form>
+               </div>
+           </div>
         </div>
       </div>
     </div>
@@ -35,5 +48,5 @@
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/layout.js"></script>
-</body>
+  <script src="js/messages.js"></script>
 </html>

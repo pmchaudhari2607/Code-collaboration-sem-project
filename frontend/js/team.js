@@ -63,11 +63,10 @@ const _pageRender = async () => {
     const userSelect = document.getElementById('invite-user');
     userSelect.innerHTML = users.filter(u => u.id !== currentUser.id).map(u => `<option value="${u.id}">${Utils.escapeHtml(u.full_name)} (@${u.username})</option>`).join('');
     
-    document.getElementById('form-invite').addEventListener('submit', async (e) => {
+    document.getElementById('form-invite').onsubmit = async (e) => {
         e.preventDefault();
         const pId = projSelect.value;
         const uId = userSelect.value;
-        const role = document.getElementById('invite-role').value;
         
         if(!pId) return UI.toast('No project selected', 'error');
         
@@ -75,7 +74,7 @@ const _pageRender = async () => {
         btn.disabled = true;
         
         try {
-            await Store.inviteMember(pId, uId, role);
+            await Store.inviteMember(pId, uId);
             UI.toast('Invitation sent!', 'success');
             UI.closeModal('modal-invite');
             loadTeam();
@@ -84,7 +83,7 @@ const _pageRender = async () => {
         } finally {
             btn.disabled = false;
         }
-    });
+    };
 };
 document.addEventListener('DOMContentLoaded', _pageRender);
 document.addEventListener('crh_user_changed', _pageRender);
