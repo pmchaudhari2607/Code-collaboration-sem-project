@@ -2,7 +2,7 @@
 
 CodeReviewHub is a comprehensive code collaboration and review platform built for teams. It allows users to manage projects, review code files, track tasks, and collaborate seamlessly.
 
-## 🚀 Features
+##  Features
 - **User Authentication:** Secure login and registration.
 - **Dashboard:** Overview of projects, tasks, and recent activity.
 - **Project Management:** Create projects and invite team members.
@@ -12,12 +12,12 @@ CodeReviewHub is a comprehensive code collaboration and review platform built fo
 - **Notifications:** Real-time alerts for project updates and invitations.
 - **Global Search:** Quickly find projects, files, and users.
 
-## 🛠️ Technology Stack
+##  Technology Stack
 - **Frontend:** Vanilla HTML5, CSS3 (Custom Design System), and JavaScript.
 - **Backend:** Node.js, Express.js.
 - **Architecture:** RESTful API with JWT-based authentication.
 
-## ⚙️ How to Run the Project Locally
+##  How to Run the Project Locally
 
 The project consists of a backend API and a frontend UI. **Both must be running** for the application to work correctly.
 
@@ -56,7 +56,7 @@ The frontend requires a local web server (opening the HTML files directly via `f
    ```
 4. Open your browser and go to `http://127.0.0.1:3000`.
 
-## 📂 Project Structure
+##  Project Structure
 - `/frontend/` - Contains all HTML pages, CSS stylesheets, and client-side JavaScript.
   - `css/` - Custom styles including theming and components.
   - `js/` - Logic for API communication (`store.js`), UI rendering (`layout.js`), and page-specific scripts.
