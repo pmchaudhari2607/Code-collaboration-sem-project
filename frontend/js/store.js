@@ -88,7 +88,10 @@ class APIStore {
 
     // Versions
     getVersions(fileId) { return this.request('/files/' + fileId + '/versions'); }
-    saveVersion(fileId, data) { return this.request('/files/' + fileId + '/versions', { method: 'POST', body: data }); }
+    createVersion(fileId, code, note) {
+        const body = (code && typeof code === 'object') ? code : { code, note };
+        return this.request('/files/' + fileId + '/versions', { method: 'POST', body });
+    }
 
     // Reviews
     getReviews(filters = {}) {
@@ -131,7 +134,7 @@ class APIStore {
     
     // Dashboard
     getDashboardStats() { return this.request('/dashboard/stats'); }
-    getDashboardActivity() { return this.request('/dashboard/activity'); }
+    getRecentActivity() { return this.request('/dashboard/activity'); }
     getProjectActivity(projectId) { return this.request('/projects/' + projectId + '/activity'); }
 
     // Messages

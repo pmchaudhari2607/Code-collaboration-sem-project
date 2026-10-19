@@ -14,7 +14,7 @@ exports.updateCode = (req, res, next) => {
   try { success(res, 'File updated', fileService.updateCode(req.params.fileId, req.body.current_code)); } catch(e) { next(e); }
 };
 exports.remove = (req, res, next) => {
-  try { success(res, 'File deleted', fileService.remove(req.params.fileId)); } catch(e) { next(e); }
+  try { success(res, 'File deleted', fileService.remove(req.params.fileId, req.user.id)); } catch(e) { next(e); }
 };
 exports.listVersions = (req, res, next) => {
   try { success(res, 'Versions', fileService.listVersions(req.params.fileId)); } catch(e) { next(e); }

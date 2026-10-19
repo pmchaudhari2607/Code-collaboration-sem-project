@@ -36,6 +36,11 @@ exports.getActivity = (userId) => {
   return activities.map(a => {
       const p = allProjects.find(p => p.id === a.project_id);
       const u = store.findById('users', a.user_id);
-      return { ...a, projectName: p?.name, userFullName: u?.full_name };
+      return {
+          ...a,
+          projectName: p?.name,
+          userName: u?.full_name,
+          userFullName: u?.full_name
+      };
   });
 };
