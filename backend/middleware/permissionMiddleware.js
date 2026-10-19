@@ -15,17 +15,17 @@ exports.getRoleForUser = getRoleForUser;
 exports.requireProjectRole = (allowedRoles) => {
   return (req, res, next) => {
     let projectId = req.params.projectId || req.params.id || req.body?.project_id || req.query.projectId;
-    // fallback if fileId or reviewId or taskId is provided instead
+    // fallback if fileId is provided instead
     if (!projectId && req.params.fileId) {
         const file = store.findById('code_files', req.params.fileId);
-        if(file) projectId = file.project_id;
-    }
-    if (!projectId && req.params.id) {
-        // try to guess the entity type from the route, but a safer bet is manually fetching
-        // Will handle this in controllers directly if needed, or explicitly pass projectId.
+        if (!file) return error(res, 'File not found', 404);
+        projectId = file.project_id;
     }
     
     if (!projectId) return error(res, 'Project ID missing', 400);
+
+    const project = store.findById('projects', projectId);
+    if (!project) return error(res, 'Project not found', 404);
     
     const role = getRoleForUser(projectId, req.user.id);
     if (!role || !allowedRoles.includes(role)) {
@@ -41,9 +41,13 @@ exports.requireProjectAccess = () => {
     let projectId = req.params.projectId || req.params.id || req.body?.project_id || req.query.projectId;
     if (!projectId && req.params.fileId) {
         const file = store.findById('code_files', req.params.fileId);
-        if(file) projectId = file.project_id;
+        if (!file) return error(res, 'File not found', 404);
+        projectId = file.project_id;
     }
     if (!projectId) return error(res, 'Project ID missing', 400);
+
+    const project = store.findById('projects', projectId);
+    if (!project) return error(res, 'Project not found', 404);
     
     const role = getRoleForUser(projectId, req.user.id);
     if (!role) {
