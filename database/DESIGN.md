@@ -650,7 +650,7 @@ When transforming the in-memory `backend/data/seed.js` into MySQL 8.0, the follo
      - Project `p1` (owner `u1`): Insert member `m_p1_owner`, `role = 'owner'`, `status = 'accepted'`, `joined_at = p1.created_at`.
      - Project `p2` (owner `u2`): Insert member `m_p2_owner`, `role = 'owner'`, `status = 'accepted'`, `joined_at = p2.created_at`.
      - Project `p3` (owner `u3`): Insert member `m_p3_owner`, `role = 'owner'`, `status = 'accepted'`, `joined_at = p3.created_at`.
-     - Project `p4` (owner `u1`): Insert member `m_p4_owner`, `role = 'owner'`, `status = 'accepted'`, `joined_at = p4.created_at`.
+     - Project `p4` (owner `u5`): Insert member `m_p4_owner`, `role = 'owner'`, `status = 'accepted'`, `joined_at = p4.created_at`.
 3. **Review `r3` Backfill**:
    - In legacy seed, review `r3` had `version_id: null`. Set `r3.version_id = 'v_f5_1'` (the initial version of file `f5`).
 4. **Temporal Normalization**:

@@ -21,8 +21,12 @@ function Run-Test($Name, $ScriptBlock) {
     }
 }
 
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+Push-Location $scriptDir
+
 Write-Host "Starting Backend Server for tests..."
-$process = Start-Process node -ArgumentList "server.js" -PassThru -NoNewWindow
+$process = Start-Process node -ArgumentList "server.js" -WorkingDirectory $scriptDir -PassThru -NoNewWindow
+
 
 try {
     Start-Sleep -Seconds 3
@@ -440,8 +444,11 @@ if ($failCount -gt 0) { $summaryColor = "Red" }
 Write-Host "TEST SUMMARY: $passCount PASSED, $failCount FAILED" -ForegroundColor $summaryColor
 Write-Host "======================================================="
 
+Pop-Location
+
 if ($failCount -gt 0) {
     exit 1
 } else {
     exit 0
 }
+
