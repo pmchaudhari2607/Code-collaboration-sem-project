@@ -35,7 +35,7 @@ CREATE TABLE users (
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_username (username),
   UNIQUE KEY uq_users_email (email),
-  CONSTRAINT chk_users_username CHECK (username REGEXP '^[A-Za-z0-9_]{3,15}$'),
+  CONSTRAINT chk_users_username CHECK (username REGEXP '^[A-Za-z0-9_]{3,30}$'),
   CONSTRAINT chk_users_full_name CHECK (CHAR_LENGTH(TRIM(full_name)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -290,15 +290,3 @@ CREATE TABLE messages (
   CONSTRAINT fk_messages_sender  FOREIGN KEY (sender_id)  REFERENCES users (id)    ON DELETE RESTRICT,
   CONSTRAINT chk_messages_content CHECK (CHAR_LENGTH(TRIM(content)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- =============================================================================
--- OPTIONAL hardening (run in MySQL Workbench only - DELIMITER is a client command):
--- make versions truly immutable at the database level.
---
--- DELIMITER $$
--- CREATE TRIGGER trg_code_versions_no_update BEFORE UPDATE ON code_versions
--- FOR EACH ROW BEGIN
---   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'code_versions rows are immutable';
--- END$$
--- DELIMITER ;
--- =============================================================================

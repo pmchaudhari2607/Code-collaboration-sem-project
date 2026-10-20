@@ -169,14 +169,19 @@ const _pageRender = async () => {
      } else {
         container.innerHTML = `
            <table style="width:100%; border-collapse:collapse;">
-             <thead><tr><th>Title</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Due Date</th></tr></thead>
+             <thead><tr><th style="width:30px;"></th><th>Title</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Due Date</th></tr></thead>
              <tbody>
                ${tasks.map(t => {
+                 const isDone = t.status === 'completed';
+                 const canEdit = t.canEdit !== undefined ? t.canEdit : (projectData && (projectData.userRole === 'owner' || projectData.userRole === 'collaborator'));
                  let sBadge = t.status === 'completed' ? '<span class="badge badge-success">Completed</span>' : 
                               (t.status === 'in_progress' ? '<span class="badge badge-info">In Progress</span>' : '<span class="badge badge-neutral">To Do</span>');
                  return `
-                 <tr>
-                   <td class="text-bold">${Utils.escapeHtml(t.title)}</td>
+                 <tr style="${isDone ? 'opacity:0.6;' : ''}">
+                   <td>
+                     <input type="checkbox" style="cursor:pointer;" ${isDone ? 'checked' : ''} ${canEdit ? '' : 'disabled title="You do not have permission to edit this task"'} onchange="toggleProjectTask('${t.id}', this.checked, this)">
+                   </td>
+                   <td class="text-bold" style="${isDone ? 'text-decoration:line-through;' : ''}">${Utils.escapeHtml(t.title)}</td>
                    <td>${sBadge}</td>
                    <td>${UI.getPriorityBadge(t.priority)}</td>
                    <td>${t.assigneeName ? Utils.escapeHtml(t.assigneeName) : '<span class="text-muted">Unassigned</span>'}</td>
@@ -186,6 +191,22 @@ const _pageRender = async () => {
              </tbody>
            </table>
         `;
+     }
+  };
+
+  window.toggleProjectTask = async (id, isDone, cb) => {
+     if (cb) cb.disabled = true;
+     try {
+        await Store.updateTask(id, { status: isDone ? 'completed' : 'todo' });
+        UI.toast(isDone ? 'Task completed' : 'Task reopened', 'success');
+        renderTasks();
+     } catch (err) {
+        if (cb) {
+           cb.checked = !isDone;
+           cb.disabled = false;
+        }
+        UI.toast(err.message, 'error');
+        renderTasks();
      }
   };
 

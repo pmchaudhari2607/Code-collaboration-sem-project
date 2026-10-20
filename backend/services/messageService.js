@@ -1,4 +1,5 @@
 const store = require('../data/store');
+const { newId } = require('../utils/id');
 
 exports.list = (projectId) => {
     const messages = store.filter('messages', m => m.project_id === projectId);
@@ -19,7 +20,7 @@ exports.create = (projectId, senderId, content) => {
     }
     
     const message = store.insert('messages', {
-        id: 'msg' + Date.now(),
+        id: newId('msg'),
         project_id: projectId,
         sender_id: senderId,
         content: content.trim(),

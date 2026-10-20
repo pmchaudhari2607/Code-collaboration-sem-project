@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.disabled = true;
         
         try {
-           await Store.saveVersion(fileId, { code, note });
+           await Store.createVersion(fileId, code, note);
            UI.toast('New version created', 'success');
            setTimeout(() => { window.location.reload(); }, 500);
         } catch(err) {
@@ -318,8 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          await Store.createTask({
             project_id: project.id, title, description: desc, assigned_to: assigneeId, priority, due_date: due, review_id: revId
          });
-         await Store.setReviewStatus(revId, 'resolved');
-         UI.toast('Task created and review resolved', 'success');
+         UI.toast('Task created', 'success');
          UI.closeModal('modal-create-task');
          loadReviews();
       } catch (err) {

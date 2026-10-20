@@ -21,7 +21,7 @@ exports.remove = (req, res, next) => {
 };
 
 exports.listMembers = (req, res, next) => {
-  try { success(res, 'Members', projectService.listMembers(req.params.projectId)); } catch(e) { next(e); }
+  try { success(res, 'Members', projectService.listMembers(req.params.projectId, req.user.id)); } catch(e) { next(e); }
 };
 exports.inviteMember = (req, res, next) => {
   try { success(res, 'Member invited', projectService.inviteMember(req.params.projectId, req.body, req.user.id), 201); } catch(e) { next(e); }

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const store = require('../data/store');
 const { generateToken } = require('../utils/jwt');
+const { newId } = require('../utils/id');
 
 exports.register = (data) => {
   if (!data.username || !data.email || !data.password || !data.full_name) {
@@ -21,7 +22,7 @@ exports.register = (data) => {
   const hash = bcrypt.hashSync(data.password, salt);
   
   const newUser = store.insert('users', {
-    id: 'u' + Date.now(),
+    id: newId('u'),
     full_name: data.full_name,
     username: data.username,
     email: data.email,

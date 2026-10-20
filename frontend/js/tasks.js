@@ -32,13 +32,13 @@ const _pageRender = async () => {
             
             tbody.innerHTML = tasks.map(t => {
                const isDone = t.status === 'completed';
-               const isOverdue = !isDone && new Date(t.due_date) < new Date();
+               const isOverdue = !isDone && t.due_date && new Date(t.due_date) < new Date();
                const project = projects.find(p => p.id === t.project_id);
-               const canEdit = project && (project.userRole === 'owner' || project.userRole === 'collaborator');
+               const canEdit = t.canEdit !== undefined ? t.canEdit : (project && (project.userRole === 'owner' || project.userRole === 'collaborator'));
                return `
                <tr style="${isDone ? 'opacity:0.6;' : ''}">
                   <td>
-                    <input type="checkbox" style="cursor:pointer;" ${isDone ? 'checked' : ''} ${canEdit ? '' : 'disabled title="You do not have permission to edit this task"'} onchange="toggleTask('${t.id}', this.checked)">
+                    <input type="checkbox" style="cursor:pointer;" ${isDone ? 'checked' : ''} ${canEdit ? '' : 'disabled title="You do not have permission to edit this task"'} onchange="toggleTask('${t.id}', this.checked, this)">
                   </td>
                   <td class="text-bold" style="${isDone ? 'text-decoration:line-through;' : ''}">${Utils.escapeHtml(t.title)}</td>
                   <td>${Utils.escapeHtml(t.projectName)}</td>
@@ -55,14 +55,19 @@ const _pageRender = async () => {
     filterProj.onchange = loadTasks;
     document.getElementById('filter-status').onchange = loadTasks;
     
-    window.toggleTask = async (id, isDone) => {
+    window.toggleTask = async (id, isDone, cb) => {
+        if (cb) cb.disabled = true;
         try {
             await Store.updateTask(id, { status: isDone ? 'completed' : 'todo' });
             UI.toast(isDone ? 'Task completed' : 'Task reopened', 'success');
             loadTasks();
         } catch(e) {
+            if (cb) {
+                cb.checked = !isDone;
+                cb.disabled = false;
+            }
             UI.toast(e.message, 'error');
-            loadTasks(); // revert visually
+            loadTasks();
         }
     };
     

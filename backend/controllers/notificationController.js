@@ -5,7 +5,7 @@ exports.list = (req, res, next) => {
   try { success(res, 'Notifications', notificationService.list(req.user.id)); } catch(e) { next(e); }
 };
 exports.markRead = (req, res, next) => {
-  try { success(res, 'Marked read', notificationService.markRead(req.params.id)); } catch(e) { next(e); }
+  try { success(res, 'Marked read', notificationService.markRead(req.params.id, req.user.id)); } catch(e) { next(e); }
 };
 exports.markAllRead = (req, res, next) => {
   try { success(res, 'All marked read', notificationService.markAllRead(req.user.id)); } catch(e) { next(e); }
