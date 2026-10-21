@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const DB_ENABLED = process.env.DB_ENABLED === 'true';
 const DB_TARGET = (process.env.DB_TARGET || 'dev').toLowerCase();

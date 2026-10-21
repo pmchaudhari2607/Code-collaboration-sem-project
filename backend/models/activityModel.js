@@ -92,3 +92,5 @@ exports.listForDashboard = async (userId, limit = 10, conn = null) => {
     created_at: toISOString(r.created_at)
   }));
 };
+
+exports.create = exports.log;

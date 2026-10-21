@@ -49,13 +49,13 @@ const searchModel = require('../models/searchModel');
 
 // In-memory services as oracle
 const store = require('../data/store');
-const projectService = require('../services/projectService');
-const fileService = require('../services/fileService');
-const reviewService = require('../services/reviewService');
-const taskService = require('../services/taskService');
-const notificationService = require('../services/notificationService');
-const dashboardService = require('../services/dashboardService');
-const searchService = require('../services/searchService');
+const projectService = require('../services/in-memory/projectService');
+const fileService = require('../services/in-memory/fileService');
+const reviewService = require('../services/in-memory/reviewService');
+const taskService = require('../services/in-memory/taskService');
+const notificationService = require('../services/in-memory/notificationService');
+const dashboardService = require('../services/in-memory/dashboardService');
+const searchService = require('../services/in-memory/searchService');
 
 const migrate = require('../../database/tools/migrate');
 const seedDatabase = require('../../database/tools/seed');

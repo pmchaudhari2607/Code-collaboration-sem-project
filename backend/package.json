@@ -10,7 +10,8 @@
     "db:apply": "node ../database/tools/migrate.js",
     "db:verify": "node ../database/tools/verify-schema.js && node ../database/tools/schema-diff.js",
     "db:seed": "node ../database/tools/seed.js",
-    "test:models": "node --test tests/models.test.js"
+    "test:models": "node --test tests/models.test.js",
+    "test:mysql": "node --test tests/mysql-api.test.js"
   },
   "keywords": [],
   "author": "",

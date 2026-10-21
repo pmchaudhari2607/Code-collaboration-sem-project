@@ -25,9 +25,9 @@ app.get('/api/health', async (req, res) => {
   if (config.DB_ENABLED) {
     try {
       const isUp = await ping();
-      dbStatus = isUp ? 'up' : 'down';
+      dbStatus = isUp ? 'reachable' : 'unavailable';
     } catch {
-      dbStatus = 'down';
+      dbStatus = 'unavailable';
     }
   }
   res.json({ success: true, message: "CodeReviewHub API is running", db: dbStatus });
@@ -48,6 +48,10 @@ app.use('/api/dev', devRoutes);
 
 app.use(errorMiddleware);
 
-app.listen(config.PORT, () => {
-  console.log(`Server is running on port ${config.PORT}`);
-});
+if (require.main === module) {
+  app.listen(config.PORT, () => {
+    console.log(`Server is running on port ${config.PORT}`);
+  });
+}
+
+module.exports = app;

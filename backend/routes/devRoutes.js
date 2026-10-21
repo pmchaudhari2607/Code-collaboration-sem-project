@@ -1,4 +1,4 @@
-// This endpoint MUST BE DISABLED before any real deployment.
+// This endpoint MUST BE DISABLED before any real deployment or when DB_ENABLED=true.
 const express = require('express');
 const router = express.Router();
 const config = require('../config/env');
@@ -7,7 +7,7 @@ const { generateToken } = require('../utils/jwt');
 const { success, error } = require('../utils/response');
 
 router.post('/impersonate', (req, res, next) => {
-  if (!config.ENABLE_DEV_MODE) {
+  if (!config.ENABLE_DEV_MODE || config.DB_ENABLED) {
     return error(res, 'Not Found', 404);
   }
   const { userId } = req.body;
@@ -20,6 +20,21 @@ router.post('/impersonate', (req, res, next) => {
   delete userReturn.password;
   
   success(res, 'Impersonated successfully', { user: userReturn, token: generateToken(user.id) });
+});
+
+router.post('/reset', (req, res, next) => {
+  if (!config.ENABLE_DEV_MODE || config.DB_ENABLED) {
+    return error(res, 'Not Found', 404);
+  }
+  store.reset();
+  success(res, 'Store reset');
+});
+
+router.get('/store', (req, res, next) => {
+  if (!config.ENABLE_DEV_MODE || config.DB_ENABLED) {
+    return error(res, 'Not Found', 404);
+  }
+  success(res, 'Store dump', store.dump());
 });
 
 module.exports = router;

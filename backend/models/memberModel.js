@@ -156,7 +156,7 @@ async function remove(projectId, userId, conn = null) {
     [projectId],
     conn
   );
-  if (ownerRows.length > 0 && ownerRows[0].owner_id === userId) {
+  if (ownerRows.length > 0 && (ownerRows[0].owner_id === userId)) {
     const err = new Error('Cannot remove the project owner');
     err.statusCode = 400;
     throw err;
@@ -164,9 +164,9 @@ async function remove(projectId, userId, conn = null) {
 
   const sql = `
     DELETE FROM project_members
-    WHERE project_id = ? AND user_id = ? AND role <> 'owner'
+    WHERE project_id = ? AND (user_id = ? OR id = ?) AND role <> 'owner'
   `;
-  const [result] = await exec(sql, [projectId, userId], conn);
+  const [result] = await exec(sql, [projectId, userId, userId], conn);
   return result.affectedRows;
 }
 
