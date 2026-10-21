@@ -1,0 +1,6 @@
+-- Migration Proposal: 002_datetime_ms (PROPOSAL ONLY - DO NOT APPLY WITHOUT GATE 1 APPROVAL)
+-- Purpose: Upgrades created_at to millisecond precision DATETIME(3) on time-ordered tables
+
+ALTER TABLE messages MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+ALTER TABLE notifications MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+ALTER TABLE activity_log MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

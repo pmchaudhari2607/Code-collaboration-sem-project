@@ -1,0 +1,145 @@
+const { exec, toISOString } = require('./helpers');
+const { newId } = require('../utils/id');
+
+function formatUser(row, includePassword = false) {
+  if (!row) return null;
+  const user = {
+    id: row.id,
+    full_name: row.full_name,
+    username: row.username,
+    email: row.email,
+    bio: row.bio || null,
+    created_at: toISOString(row.created_at)
+  };
+  if (row.updated_at) {
+    user.updated_at = toISOString(row.updated_at);
+  }
+  if (includePassword) {
+    user.password = row.password_hash;
+    user.password_hash = row.password_hash;
+  }
+  return user;
+}
+
+async function findAuthByIdentifier(identifier, conn = null) {
+  const sql = `
+    SELECT id, full_name, username, email, password_hash, bio, created_at, updated_at
+    FROM users
+    WHERE username = ? OR email = ?
+    LIMIT 1
+  `;
+  const [rows] = await exec(sql, [identifier, identifier], conn);
+  if (!rows || rows.length === 0) return null;
+  return formatUser(rows[0], true);
+}
+
+async function findById(id, conn = null) {
+  const sql = `
+    SELECT id, full_name, username, email, bio, created_at, updated_at
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+  `;
+  const [rows] = await exec(sql, [id], conn);
+  if (!rows || rows.length === 0) return null;
+  return formatUser(rows[0], false);
+}
+
+async function findByUsernameOrEmail(username, email, excludeUserId = null, conn = null) {
+  let sql = 'SELECT id, username, email FROM users WHERE (username = ? OR email = ?)';
+  const params = [username, email];
+  if (excludeUserId) {
+    sql += ' AND id <> ?';
+    params.push(excludeUserId);
+  }
+  sql += ' LIMIT 1';
+  const [rows] = await exec(sql, params, conn);
+  return rows[0] || null;
+}
+
+async function create(data, conn = null) {
+  const id = data.id || newId('u');
+  const sql = `
+    INSERT INTO users (id, full_name, username, email, password_hash, bio, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())
+  `;
+  await exec(sql, [
+    id,
+    data.full_name,
+    data.username,
+    data.email,
+    data.password_hash || data.password,
+    data.bio || null
+  ], conn);
+  return findById(id, conn);
+}
+
+async function update(id, patch, conn = null) {
+  const allowed = ['full_name', 'email', 'bio'];
+  const fields = [];
+  const values = [];
+
+  for (const key of allowed) {
+    if (patch[key] !== undefined) {
+      fields.push(`${key} = ?`);
+      values.push(patch[key]);
+    }
+  }
+
+  if (fields.length === 0) {
+    const err = new Error('No valid fields provided for update');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  fields.push('updated_at = UTC_TIMESTAMP()');
+  values.push(id);
+
+  const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+  await exec(sql, values, conn);
+  return findById(id, conn);
+}
+
+async function list(conn = null) {
+  const sql = `
+    SELECT id, full_name, username, bio, created_at
+    FROM users
+    ORDER BY created_at ASC
+  `;
+  const [rows] = await exec(sql, [], conn);
+  return rows.map(r => ({
+    id: r.id,
+    full_name: r.full_name,
+    username: r.username,
+    bio: r.bio || null,
+    created_at: toISOString(r.created_at)
+  }));
+}
+
+async function search(query, reqUserId, conn = null) {
+  const term = `%${query.toLowerCase()}%`;
+  const sql = `
+    SELECT id, full_name, username, bio, created_at
+    FROM users
+    WHERE id <> ? AND (LOWER(username) LIKE ? OR LOWER(full_name) LIKE ?)
+    ORDER BY full_name ASC
+  `;
+  const [rows] = await exec(sql, [reqUserId, term, term], conn);
+  return rows.map(r => ({
+    id: r.id,
+    full_name: r.full_name,
+    username: r.username,
+    bio: r.bio || null,
+    created_at: toISOString(r.created_at)
+  }));
+}
+
+module.exports = {
+  findAuthByIdentifier,
+  findById,
+  findByUsernameOrEmail,
+  create,
+  update,
+  list,
+  search
+};

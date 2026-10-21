@@ -11,6 +11,21 @@ async function applySchema() {
 
   try {
     if (!keep) {
+      if (!config.database.endsWith('_test')) {
+        // Guard: check if any table holds rows
+        const [tables] = await conn.query(
+          `SELECT table_name FROM information_schema.tables WHERE table_schema = ?`,
+          [config.database]
+        );
+        for (const t of tables) {
+          const tName = t.table_name || t.TABLE_NAME;
+          const [cnt] = await conn.query(`SELECT COUNT(*) AS c FROM \`${config.database}\`.\`${tName}\``);
+          if (cnt[0]?.c > 0) {
+            throw new Error(`[apply-schema] SAFETY REFUSAL: Refusing to reset "${config.database}" because table "${tName}" contains ${cnt[0].c} rows and database name does not end in _test.`);
+          }
+        }
+      }
+
       console.log(`[apply-schema] Executing reset_dev.sql on ${config.database}...`);
       const resetSql = fs.readFileSync(resetSqlPath, 'utf8');
       await conn.query(resetSql);

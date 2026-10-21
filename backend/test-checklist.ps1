@@ -14,7 +14,8 @@ function Run-Test($Name, $ScriptBlock) {
         & $ScriptBlock
         $script:passCount++
         Write-Host "[PASS] $Name" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         $script:failCount++
         Write-Host "[FAIL] $Name" -ForegroundColor Red
         Write-Host "       Error: $_" -ForegroundColor DarkRed
@@ -34,7 +35,7 @@ try {
 
     # 1. Register a new user
     Run-Test "Register a new user" {
-        $body = @{ full_name="Test User"; username="tester"; email="test@example.com"; password="password"; confirm_password="password" } | ConvertTo-Json
+        $body = @{ full_name = "Test User"; username = "tester"; email = "test@example.com"; password = "password"; confirm_password = "password" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/auth/register" -Method Post -ContentType "application/json" -Body $body
         if (-not $res.success) { throw "Failed to register" }
     }
@@ -42,12 +43,12 @@ try {
     # 2. Log in as prasanna/password
     $token1 = ""
     Run-Test "Log in as prasanna/password" {
-        $body = @{ identifier="prasanna"; password="password" } | ConvertTo-Json
+        $body = @{ identifier = "prasanna"; password = "password" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body $body
         $script:token1 = $res.data.token
         if (-not $script:token1) { throw "Failed to login or get token" }
     }
-    $headers1 = @{ Authorization="Bearer $token1" }
+    $headers1 = @{ Authorization = "Bearer $token1" }
 
     # 3. Fetch dashboard stats
     Run-Test "Fetch dashboard stats and assert fields" {
@@ -64,7 +65,7 @@ try {
     # 4. Create a project
     $newProjectId = ""
     Run-Test "Create a project" {
-        $body = @{ name="Test Project"; description="Desc"; visibility="public"; category="Python" } | ConvertTo-Json
+        $body = @{ name = "Test Project"; description = "Desc"; visibility = "public"; category = "Python" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/projects" -Method Post -Headers $headers1 -ContentType "application/json" -Body $body
         $script:newProjectId = $res.data.id
         if (-not $script:newProjectId) { throw "No project ID returned" }
@@ -73,7 +74,7 @@ try {
     # 5. Invite a second seeded user (himesh, u2)
     $memberId = ""
     Run-Test "Invite a second seeded user (himesh)" {
-        $body = @{ userId="u2" } | ConvertTo-Json
+        $body = @{ userId = "u2" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body $body
         $script:memberId = $res.data.id
         if (-not $script:memberId) { throw "No member ID returned for invitation" }
@@ -83,9 +84,9 @@ try {
     $token2 = ""
     $headers2 = @{}
     Run-Test "Accept the invitation as that user" {
-        $login = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier="himesh"; password="password" } | ConvertTo-Json)
+        $login = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier = "himesh"; password = "password" } | ConvertTo-Json)
         $script:token2 = $login.data.token
-        $script:headers2 = @{ Authorization="Bearer $token2" }
+        $script:headers2 = @{ Authorization = "Bearer $token2" }
         
         $res = Invoke-RestMethod -Uri "$baseUrl/notifications/invitations/$memberId/accept" -Method Post -Headers $headers2 -ContentType "application/json"
         if (-not $res.success) { throw "Failed to accept invitation" }
@@ -96,16 +97,16 @@ try {
     $v2Id = ""
     Run-Test "Create a file, save code, save a new version" {
         # Create file
-        $fileBody = @{ file_name="main.py"; language="Python" } | ConvertTo-Json
+        $fileBody = @{ file_name = "main.py"; language = "Python" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/files/project/$newProjectId" -Method Post -Headers $headers1 -ContentType "application/json" -Body $fileBody
         $script:fileId = $res.data.id
 
         # Save code (update)
-        $updateBody = @{ current_code="print('v2')" } | ConvertTo-Json
+        $updateBody = @{ current_code = "print('v2')" } | ConvertTo-Json
         $resUpdate = Invoke-RestMethod -Uri "$baseUrl/files/$fileId" -Method Put -Headers $headers1 -ContentType "application/json" -Body $updateBody
 
         # Save new version
-        $vBody = @{ code="print('v2')" } | ConvertTo-Json
+        $vBody = @{ code = "print('v2')" } | ConvertTo-Json
         $resVer = Invoke-RestMethod -Uri "$baseUrl/files/$fileId/versions" -Method Post -Headers $headers1 -ContentType "application/json" -Body $vBody
         $script:v2Id = $resVer.data.id
     }
@@ -113,7 +114,7 @@ try {
     # 8. Submit a review
     $reviewId = ""
     Run-Test "Submit a review" {
-        $rBody = @{ file_id=$fileId; version_id=$v2Id; line_number=1; review_type="comment"; comment="Nice code" } | ConvertTo-Json
+        $rBody = @{ file_id = $fileId; version_id = $v2Id; line_number = 1; review_type = "comment"; comment = "Nice code" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/files/$fileId/reviews" -Method Post -Headers $headers1 -ContentType "application/json" -Body $rBody
         $script:reviewId = $res.data.id
     }
@@ -129,21 +130,23 @@ try {
     $headers3 = @{}
     Run-Test "Attempt 403 cases (closing review as non-owner, creating task as non-member)" {
         # Login as divyesh (u3, no access to this project)
-        $login3 = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier="divyesh"; password="password" } | ConvertTo-Json)
-        $script:headers3 = @{ Authorization="Bearer $($login3.data.token)" }
+        $login3 = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier = "divyesh"; password = "password" } | ConvertTo-Json)
+        $script:headers3 = @{ Authorization = "Bearer $($login3.data.token)" }
 
         $caughtReview = $false
         try {
-            Invoke-RestMethod -Uri "$baseUrl/reviews/$reviewId/status" -Method Put -Headers $headers3 -ContentType "application/json" -Body (@{ status="closed" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+            Invoke-RestMethod -Uri "$baseUrl/reviews/$reviewId/status" -Method Put -Headers $headers3 -ContentType "application/json" -Body (@{ status = "closed" } | ConvertTo-Json) -ErrorAction Stop
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Forbidden") { $caughtReview = $true }
         }
         if (-not $caughtReview) { throw "Closing review as non-owner did NOT return 403" }
 
         $caughtTask = $false
         try {
-            Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers3 -ContentType "application/json" -Body (@{ project_id=$newProjectId; title="Task"; priority="low" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+            Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers3 -ContentType "application/json" -Body (@{ project_id = $newProjectId; title = "Task"; priority = "low" } | ConvertTo-Json) -ErrorAction Stop
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Forbidden") { $caughtTask = $true }
         }
         if (-not $caughtTask) { throw "Creating task as non-member did NOT return 403" }
@@ -152,7 +155,7 @@ try {
     # 11. Convert review to task (strengthened)
     $convertedTaskId = ""
     Run-Test "Convert a review to a task" {
-        $tBody = @{ project_id=$newProjectId; review_id=$reviewId; title="Fix something"; priority="high" } | ConvertTo-Json
+        $tBody = @{ project_id = $newProjectId; review_id = $reviewId; title = "Fix something"; priority = "high" } | ConvertTo-Json
         $res = Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers1 -ContentType "application/json" -Body $tBody
         if (-not $res.data.id) { throw "Failed to create task from review" }
         if ($res.data.review_id -ne $reviewId) {
@@ -178,12 +181,12 @@ try {
     Run-Test "T1: Partial task update keeps other fields intact" {
         # Create a detailed task first
         $initTaskBody = @{
-            project_id = $newProjectId
-            title = "Task for T1"
+            project_id  = $newProjectId
+            title       = "Task for T1"
             description = "Preserve this description"
-            priority = "low"
+            priority    = "low"
             assigned_to = "u2"
-            due_date = "2026-11-20"
+            due_date    = "2026-11-20"
         } | ConvertTo-Json
         $tRes = Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers1 -ContentType "application/json" -Body $initTaskBody
         $tId = $tRes.data.id
@@ -208,7 +211,8 @@ try {
         $caught = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers1 -ContentType "application/json" -Body $badBody -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "BadRequest") { $caught = $true }
         }
         if (-not $caught) { throw "Task creation with cross-project review did NOT return 400" }
@@ -221,7 +225,8 @@ try {
         $caught = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers1 -ContentType "application/json" -Body $badAssigneeBody -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "BadRequest") { $caught = $true }
         }
         if (-not $caught) { throw "Assigning task to non-member did NOT return 400" }
@@ -237,19 +242,21 @@ try {
         $caughtCollabClose = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/reviews/$reviewId/status" -Method Put -Headers $headers2 -ContentType "application/json" -Body (@{ status = "closed" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Forbidden") { $caughtCollabClose = $true }
         }
         if (-not $caughtCollabClose) { throw "Collaborator closing review did NOT return 403" }
 
         # 3. Owner cannot close an open review (409)
-        $openRevRes = Invoke-RestMethod -Uri "$baseUrl/files/$fileId/reviews" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ file_id=$fileId; version_id=$v2Id; line_number=2; review_type="improvement"; comment="Need docs" } | ConvertTo-Json)
+        $openRevRes = Invoke-RestMethod -Uri "$baseUrl/files/$fileId/reviews" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ file_id = $fileId; version_id = $v2Id; line_number = 2; review_type = "improvement"; comment = "Need docs" } | ConvertTo-Json)
         $openRevId = $openRevRes.data.id
 
         $caughtOwnerCloseOpen = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/reviews/$openRevId/status" -Method Put -Headers $headers1 -ContentType "application/json" -Body (@{ status = "closed" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Conflict") { $caughtOwnerCloseOpen = $true }
         }
         if (-not $caughtOwnerCloseOpen) { throw "Owner closing open review did NOT return 409" }
@@ -264,7 +271,8 @@ try {
         $caughtCollabReopen = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/reviews/$reviewId/status" -Method Put -Headers $headers2 -ContentType "application/json" -Body (@{ status = "open" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Forbidden") { $caughtCollabReopen = $true }
         }
         if (-not $caughtCollabReopen) { throw "Collaborator reopening closed review did NOT return 403" }
@@ -284,18 +292,19 @@ try {
     # T5: Invitation lifecycle (reject, reinvite, duplicate pending 409, self-invite 400, double-response 409, notifications)
     Run-Test "T5: Invitation lifecycle, duplicate handling, notifications" {
         # Login as u5 (sneha)
-        $login5 = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier="sneha"; password="password" } | ConvertTo-Json)
-        $headers5 = @{ Authorization="Bearer $($login5.data.token)" }
+        $login5 = Invoke-RestMethod -Uri "$baseUrl/auth/login" -Method Post -ContentType "application/json" -Body (@{ identifier = "sneha"; password = "password" } | ConvertTo-Json)
+        $headers5 = @{ Authorization = "Bearer $($login5.data.token)" }
 
         # 1. Invite u5
-        $invRes = Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId="u5" } | ConvertTo-Json)
+        $invRes = Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId = "u5" } | ConvertTo-Json)
         $m5Id = $invRes.data.id
 
         # Duplicate pending -> 409
         $caughtDupPending = $false
         try {
-            Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId="u5" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+            Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId = "u5" } | ConvertTo-Json) -ErrorAction Stop
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Conflict") { $caughtDupPending = $true }
         }
         if (-not $caughtDupPending) { throw "Inviting an already pending user did NOT return 409" }
@@ -303,8 +312,9 @@ try {
         # Self-invite -> 400
         $caughtSelfInvite = $false
         try {
-            Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId="u1" } | ConvertTo-Json) -ErrorAction Stop
-        } catch {
+            Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId = "u1" } | ConvertTo-Json) -ErrorAction Stop
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "BadRequest") { $caughtSelfInvite = $true }
         }
         if (-not $caughtSelfInvite) { throw "Self-invitation did NOT return 400" }
@@ -317,7 +327,8 @@ try {
         $caughtTwice = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/notifications/invitations/$m5Id/decline" -Method Post -Headers $headers5 -ContentType "application/json" -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Conflict") { $caughtTwice = $true }
         }
         if (-not $caughtTwice) { throw "Responding twice did NOT return 409" }
@@ -334,7 +345,7 @@ try {
         if (-not $inviterNotif) { throw "Inviter did NOT receive decline notification" }
 
         # Re-invite succeeds (reuses SAME member id, resets status to pending)
-        $reinvRes = Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId="u5" } | ConvertTo-Json)
+        $reinvRes = Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId/members/invitations" -Method Post -Headers $headers1 -ContentType "application/json" -Body (@{ userId = "u5" } | ConvertTo-Json)
         if ($reinvRes.data.id -ne $m5Id) { throw "Re-invite did not reuse the same member row id ($($reinvRes.data.id) vs $m5Id)" }
         if ($reinvRes.data.status -ne "pending") { throw "Re-invite status is not pending" }
     }
@@ -372,7 +383,8 @@ try {
         $caught403 = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/notifications/$targetNotifId/read" -Method Put -Headers $headers3 -ContentType "application/json" -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "Forbidden") { $caught403 = $true }
         }
         if (-not $caught403) { throw "Marking another user's notification read did NOT return 403" }
@@ -397,7 +409,8 @@ try {
         $caughtProj = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/projects/$newProjectId" -Method Get -Headers $headers1 -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "NotFound") { $caughtProj = $true }
         }
         if (-not $caughtProj) { throw "Deleted project is still reachable" }
@@ -406,7 +419,8 @@ try {
         $caughtFile = $false
         try {
             Invoke-RestMethod -Uri "$baseUrl/files/$fileId" -Method Get -Headers $headers1 -ErrorAction Stop
-        } catch {
+        }
+        catch {
             if ($_.Exception.Response.StatusCode -eq "NotFound") { $caughtFile = $true }
         }
         if (-not $caughtFile) { throw "Deleted project file is still reachable" }
@@ -420,7 +434,8 @@ try {
         if ($revsRes.data.length -ne 0) { throw "Reviews still exist for deleted project" }
     }
 
-} finally {
+}
+finally {
     Write-Host "Stopping Backend Server..."
     if ($process -and -not $process.HasExited) {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
@@ -433,7 +448,8 @@ node tests/integrity-check.js
 if ($LASTEXITCODE -ne 0) {
     $script:failCount++
     Write-Host "[FAIL] Integrity Check suite failed" -ForegroundColor Red
-} else {
+}
+else {
     $script:passCount++
     Write-Host "[PASS] Integrity Check suite passed" -ForegroundColor Green
 }
@@ -448,7 +464,8 @@ Pop-Location
 
 if ($failCount -gt 0) {
     exit 1
-} else {
+}
+else {
     exit 0
 }
 

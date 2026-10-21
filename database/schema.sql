@@ -35,7 +35,7 @@ CREATE TABLE users (
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_username (username),
   UNIQUE KEY uq_users_email (email),
-  CONSTRAINT chk_users_username CHECK (username REGEXP '^[A-Za-z0-9_]{3,30}$'),
+  CONSTRAINT chk_users_username CHECK (username REGEXP '^[A-Za-z0-9_]{3,15}$'),
   CONSTRAINT chk_users_full_name CHECK (CHAR_LENGTH(TRIM(full_name)) > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
