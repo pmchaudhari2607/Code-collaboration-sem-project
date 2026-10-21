@@ -62,5 +62,54 @@ The frontend requires a local web server (opening the HTML files directly via `f
   - `js/` - Logic for API communication (`store.js`), UI rendering (`layout.js`), and page-specific scripts.
 - `/backend/` - Contains the Express.js server and API endpoints.
   - `controllers/` - Logic for handling API requests.
+  - `middleware/` - Authentication, role resolution, and permission enforcement.
+  - `models/` - MySQL data access layer (parameterized SQL, transactions, cascades).
   - `routes/` - API route definitions.
-  - `services/` - Business logic and data handling.
+  - `services/` - Switchable service layer (`in-memory/` and `mysql/`).
+  - `tests/` - Comprehensive integration, model parity, and workflow test suites.
+- `/database/` - Database schemas, migrations, and automated verification tools.
+
+---
+
+## 🗄️ Database Architecture & Runtime Modes
+
+CodeReviewHub features a **Switchable Architecture** managed by a single environment variable `DB_ENABLED` in `backend/.env`.
+
+### 1. Evaluation Script for Examiners (One-Command Verification)
+Examiners can verify the entire MySQL integration, schema parity, async/await correctness, and multi-user collaboration workflow in seconds:
+```powershell
+powershell -ExecutionPolicy Bypass -File run-examiner-demo.ps1
+```
+
+### 2. MySQL Submission Mode (`DB_ENABLED=true`)
+When `DB_ENABLED=true`, the backend dynamically routes all API controllers through MySQL services and transactions targeting MySQL 8.0 on port `3307`:
+* **Port**: `3307`
+* **Development Database**: `code_review_portal_dev`
+* **Test Database**: `code_review_portal_test` (used for all destructive test runs)
+* **Application DB User**: `crh_app`
+* **Health Check**: `GET http://localhost:5000/api/health` -> `{"success": true, "db": "reachable"}`
+
+### 3. Evaluation User Accounts (Pre-Seeded in Development Database)
+* **Project Owner**: `prasanna` / `password`
+* **Collaborator**: `himesh` / `password`
+* **Viewer**: `divyesh` / `password`
+
+### 4. Zero-Downtime Rollback Path (`DB_ENABLED=false`)
+If MySQL is stopped or undergoing maintenance, the application has an instant, fully-tested fallback:
+1. Open `backend/.env`.
+2. Set `DB_ENABLED=false`.
+3. Restart the backend server (`node server.js`).
+4. The application seamlessly operates on the existing in-memory store with 100% feature parity.
+
+### 5. Database Backup and Restore
+A verified database backup utility is provided:
+```powershell
+# Create an atomic, verified mysqldump of the dev database:
+node database/tools/backup-verify.js
+
+# Output stored in: backups/dev_backup_latest.sql
+```
+To restore a backup into MySQL port 3307:
+```powershell
+mysql -h localhost -P 3307 -u crh_app -p code_review_portal_dev < backups/dev_backup_latest.sql
+```
