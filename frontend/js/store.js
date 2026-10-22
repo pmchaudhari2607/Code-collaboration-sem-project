@@ -60,13 +60,6 @@ class APIStore {
             return null;
         }
     }
-    
-    // Dev
-    async devImpersonate(userId) {
-        const res = await this.request('/dev/impersonate', { method: 'POST', body: { userId } });
-        this.setToken(res.token);
-        return res.user;
-    }
 
     // Projects
     getProjects() { return this.request('/projects'); }

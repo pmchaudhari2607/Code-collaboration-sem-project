@@ -129,6 +129,10 @@ const Layout = {
     if (window.innerWidth < 768 && mobileMenuBtn) {
        mobileMenuBtn.style.display = 'block';
     }
+
+    // Defensively guarantee no legacy acting-as element can ever exist in DOM
+    const legacySwitcher = document.getElementById('acting-as-select') || document.querySelector('.acting-as');
+    if (legacySwitcher) legacySwitcher.remove();
   },
   
   bindEvents: () => {

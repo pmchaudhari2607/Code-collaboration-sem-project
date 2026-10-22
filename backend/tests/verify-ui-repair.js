@@ -343,6 +343,40 @@ async function run() {
   assert.strictEqual(reLoginRes.status, 401);
   console.log('   ✔ Deleted user cannot log in (401)');
 
+  // 14. Testing Absence of Demo User Switcher and Impersonation
+  console.log('\n14. Testing absence of demo user switcher and impersonation...');
+  const fs = require('fs');
+  const path = require('path');
+
+  const layoutJsPath = path.resolve(__dirname, '../../frontend/js/layout.js');
+  const layoutJsContent = fs.readFileSync(layoutJsPath, 'utf8');
+  assert.ok(!layoutJsContent.includes('Store.devImpersonate'), 'layout.js must not contain devImpersonate');
+  assert.ok(!layoutJsContent.includes('Acting as:'), 'layout.js must not render Acting as dropdown');
+
+  const storeJsPath = path.resolve(__dirname, '../../frontend/js/store.js');
+  const storeJsContent = fs.readFileSync(storeJsPath, 'utf8');
+  assert.ok(!storeJsContent.includes('devImpersonate'), 'store.js must not contain devImpersonate');
+
+  const devRoutesPath = path.resolve(__dirname, '../routes/devRoutes.js');
+  const devRoutesContent = fs.readFileSync(devRoutesPath, 'utf8');
+  assert.ok(!devRoutesContent.includes('/impersonate'), 'devRoutes.js must not expose /impersonate');
+
+  const impRes = await req('/dev/impersonate', {
+    method: 'POST',
+    body: { userId: 'u1' }
+  });
+  assert.strictEqual(impRes.status, 404, '/dev/impersonate must return 404');
+
+  // Verify real authenticated user identity from /auth/me
+  const meRes = await req('/auth/me', {
+    headers: { Authorization: `Bearer ${token1}` }
+  });
+  assert.strictEqual(meRes.status, 200);
+  assert.strictEqual(meRes.data.data.username, 'prasanna');
+  assert.strictEqual(meRes.data.data.full_name, 'Prasanna Chaudhari');
+  console.log(`   ✔ Real auth source of truth verified: @${meRes.data.data.username} (${meRes.data.data.full_name})`);
+  console.log('   ✔ Impersonation route and demo user switcher permanently eliminated');
+
   console.log('\n=== ALL UI & FUNCTIONALITY CHECKS PASSED SUCCESSFULLY ===\n');
   await stopServer();
   await close();
