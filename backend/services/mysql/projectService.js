@@ -174,10 +174,11 @@ exports.inviteMember = async (projectId, data, inviterId) => {
   }
 
   return withTransaction(async (conn) => {
+    const assignedRole = 'collaborator';
     const newMember = await memberModel.create({
       project_id: projectId,
       user_id: targetUserId,
-      role: 'collaborator',
+      role: assignedRole,
       status: 'pending',
       invited_by: inviterId
     }, conn);

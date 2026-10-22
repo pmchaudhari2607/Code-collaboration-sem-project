@@ -36,9 +36,15 @@ const _pageRender = async () => {
    };
    
    window.respondInvite = async (id, accept) => {
-       await Store.respondToInvitation(id, accept);
-       UI.toast(accept ? 'Invitation accepted' : 'Invitation rejected', 'success');
-       document.dispatchEvent(new Event('crh_user_changed'));
+       try {
+         await Store.respondToInvitation(id, accept);
+         UI.toast(accept ? 'Invitation accepted! You now have project access.' : 'Invitation declined.', 'success');
+         await loadNotifs();
+         if(Layout && Layout.updateNotificationsBadge) Layout.updateNotificationsBadge();
+         document.dispatchEvent(new Event('crh_user_changed'));
+       } catch (err) {
+         UI.toast(err.message, 'error');
+       }
    };
    
    document.getElementById('btn-mark-all').onclick = async () => {

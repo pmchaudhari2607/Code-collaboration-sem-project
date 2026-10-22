@@ -218,6 +218,49 @@ async function update(id, patch, conn = null) {
 
 async function deleteWithTransaction(id, conn = null) {
   const runner = async (c) => {
+    // 1. Gather all dependent polymorphic references (notifications)
+    const [files] = await c.query('SELECT id FROM code_files WHERE project_id = ?', [id]);
+    const fileIds = files.map(f => f.id);
+
+    let reviewIds = [];
+    let versionIds = [];
+    if (fileIds.length > 0) {
+      const fPlaceholders = fileIds.map(() => '?').join(',');
+      const [reviews] = await c.query(`SELECT id FROM reviews WHERE file_id IN (${fPlaceholders})`, fileIds);
+      reviewIds = reviews.map(r => r.id);
+
+      const [versions] = await c.query(`SELECT id FROM code_versions WHERE file_id IN (${fPlaceholders})`, fileIds);
+      versionIds = versions.map(v => v.id);
+    }
+
+    const [tasks] = await c.query('SELECT id FROM tasks WHERE project_id = ?', [id]);
+    const taskIds = tasks.map(t => t.id);
+
+    const [members] = await c.query('SELECT id FROM project_members WHERE project_id = ?', [id]);
+    const memberIds = members.map(m => m.id);
+
+    // 2. Clean polymorphic notifications referencing reviews, versions, tasks, or members
+    if (reviewIds.length > 0) {
+      const rPlaceholders = reviewIds.map(() => '?').join(',');
+      await c.query(`DELETE FROM notifications WHERE type IN ('review', 'resolution') AND reference_id IN (${rPlaceholders})`, reviewIds);
+    }
+    if (versionIds.length > 0) {
+      const vPlaceholders = versionIds.map(() => '?').join(',');
+      await c.query(`DELETE FROM notifications WHERE type = 'version' AND reference_id IN (${vPlaceholders})`, versionIds);
+    }
+    if (taskIds.length > 0) {
+      const tPlaceholders = taskIds.map(() => '?').join(',');
+      await c.query(`DELETE FROM notifications WHERE type = 'task' AND reference_id IN (${tPlaceholders})`, taskIds);
+    }
+    if (memberIds.length > 0) {
+      const mPlaceholders = memberIds.map(() => '?').join(',');
+      await c.query(`DELETE FROM notifications WHERE type = 'invitation' AND reference_id IN (${mPlaceholders})`, memberIds);
+    }
+
+    // 3. Delete any notifications tied directly to this project
+    await c.query('DELETE FROM notifications WHERE project_id = ?', [id]);
+
+    // 4. Finally delete project (cascades to project_members, code_files -> versions & reviews, tasks, activity_log, messages)
     const [result] = await c.query('DELETE FROM projects WHERE id = ?', [id]);
     return result.affectedRows > 0;
   };

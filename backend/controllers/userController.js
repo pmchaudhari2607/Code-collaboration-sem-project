@@ -28,3 +28,11 @@ exports.updateMe = async (req, res, next) => {
     success(res, 'Profile updated', data);
   } catch(e) { next(e); }
 };
+
+exports.deleteMe = async (req, res, next) => {
+  try {
+    const password = req.body.password;
+    await userService.deleteMe(req.user.id, password);
+    success(res, 'Account successfully deleted', { deleted: true });
+  } catch(e) { next(e); }
+};

@@ -30,6 +30,7 @@
           </div>
           <div class="d-flex gap-2" id="pd-actions" style="display:none;">
             <button class="btn btn-secondary" onclick="UI.openModal('modal-edit-project')"><span class="icon" data-icon="edit"></span> Edit Project</button>
+            <button class="btn btn-danger" id="btn-delete-project" onclick="openDeleteProjectModal()"><span class="icon" data-icon="trash"></span> Delete Project</button>
           </div>
         </div>
 
@@ -84,9 +85,15 @@
         <div class="tab-pane" id="tab-files" style="display:none;">
            <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="m-0">Code Files</h3>
-              <button class="btn btn-primary" id="btn-add-file" style="display:none;" onclick="UI.openModal('modal-add-file')">
-                 <span class="icon" data-icon="plus"></span> Add File
-              </button>
+              <div class="d-flex gap-2" id="files-action-btns" style="display:none;">
+                 <input type="file" id="file-upload-input" accept=".c,.h,.cpp,.java,.py,.txt,.js" style="display:none;">
+                 <button class="btn btn-secondary" id="btn-upload-file">
+                    <span class="icon" data-icon="upload"></span> Upload File
+                 </button>
+                 <button class="btn btn-primary" id="btn-add-file" onclick="UI.openModal('modal-add-file')">
+                    <span class="icon" data-icon="plus"></span> New File
+                 </button>
+              </div>
            </div>
            <div class="card" style="padding:0; overflow:hidden;">
               <table id="table-files">
@@ -114,7 +121,9 @@
         <div class="tab-pane" id="tab-members" style="display:none;">
            <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="m-0">Project Members</h3>
-              <a href="team.html" class="btn btn-primary" id="btn-invite" style="display:none;">Invite Members</a>
+              <button class="btn btn-primary" id="btn-invite" style="display:none;" onclick="UI.openModal('modal-invite-member')">
+                 <span class="icon" data-icon="userPlus"></span> Invite Member
+              </button>
            </div>
            <div class="card" style="padding:0; overflow:hidden;">
               <table id="table-members">
@@ -216,8 +225,92 @@
     </div>
   </div>
 
+  <!-- Delete Project Confirmation Modal -->
+  <div class="modal-backdrop" id="modal-delete-project">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title text-danger d-flex align-items-center gap-2">
+          <span class="icon" data-icon="alertTriangle"></span> Delete Project
+        </h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-delete-project')">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 12px;">
+          Are you sure you want to permanently delete <strong id="delete-proj-name" style="color: var(--text-primary);"></strong>?
+        </p>
+        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--danger); padding: 12px 14px; border-radius: 4px; margin-bottom: 16px;">
+          <div style="font-weight: 600; color: var(--danger); font-size: 13px; margin-bottom: 4px;">Warning: This action is permanent!</div>
+          <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">
+            All code files, version history, line-by-line reviews, project tasks, and team activity will be permanently erased. This cannot be undone.
+          </div>
+        </div>
+        <div id="delete-proj-error" class="text-danger text-small mb-2" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-delete-project" onclick="UI.closeModal('modal-delete-project')">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-delete-project">
+          <span class="icon" data-icon="trash"></span> Delete Project Permanently
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Member Modal -->
+  <div class="modal-backdrop" id="modal-invite-member">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Invite Member to Project</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-invite-member')">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="form-invite-member">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Search Users</label>
+            <div style="position:relative;">
+              <input type="text" id="invite-search-input" class="form-control" placeholder="Search by username or name..." autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Matching Users</label>
+            <div id="invite-user-results" style="max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-btn); padding:4px;">
+              <div class="text-muted text-small text-center py-3" id="invite-results-placeholder">Type at least 2 characters to search.</div>
+            </div>
+            <input type="hidden" id="selected-invite-user-id" required>
+          </div>
+
+          <div id="selected-user-card" class="card mb-3 p-2 d-flex align-items-center justify-content-between" style="display:none; background:var(--accent-soft); border-color:var(--accent);">
+            <div class="d-flex align-items-center gap-2">
+              <div id="selected-user-avatar"></div>
+              <div>
+                <div class="text-bold" id="selected-user-name"></div>
+                <div class="text-small text-muted" id="selected-user-handle"></div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost text-small text-danger" id="btn-clear-selected-user" style="padding:4px 8px;">Change</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="invite-role" class="form-control">
+              <option value="collaborator" selected>Collaborator (Can review and edit files)</option>
+              <option value="viewer">Viewer (Read-only)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-invite-member')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-invitation" disabled>Send Invitation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="js/icons.js"></script>
-  <script src="js/mock-data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>

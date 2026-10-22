@@ -69,8 +69,9 @@
 
         <div class="dashboard-grid">
           <div class="card" style="grid-column: span 2;">
-            <div class="card-header">
-              <h3 class="card-title">Recent Coding Activity</h3>
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Activity Overview</h3>
+              <span class="badge badge-neutral" style="font-size:12px; font-weight:500;">Last 7 Days</span>
             </div>
             <div id="chart-container"
               style="height:250px; display:flex; align-items:flex-end; gap:8px; padding-top:20px; border-bottom: 1px solid var(--border);">
@@ -115,7 +116,6 @@
   </div>
 
   <script src="js/icons.js"></script>
-  <script src="js/mock-data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>

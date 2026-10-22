@@ -67,6 +67,7 @@ const _pageRender = async () => {
         e.preventDefault();
         const pId = projSelect.value;
         const uId = userSelect.value;
+        const role = document.getElementById('invite-role')?.value || 'collaborator';
         
         if(!pId) return UI.toast('No project selected', 'error');
         
@@ -74,7 +75,7 @@ const _pageRender = async () => {
         btn.disabled = true;
         
         try {
-            await Store.inviteMember(pId, uId);
+            await Store.inviteMember(pId, uId, role);
             UI.toast('Invitation sent!', 'success');
             UI.closeModal('modal-invite');
             loadTeam();

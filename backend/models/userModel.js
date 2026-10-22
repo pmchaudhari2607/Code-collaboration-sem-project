@@ -134,12 +134,103 @@ async function search(query, reqUserId, conn = null) {
   }));
 }
 
+async function findAuthById(id, conn = null) {
+  const sql = `
+    SELECT id, full_name, username, email, password_hash, bio, created_at, updated_at
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+  `;
+  const [rows] = await exec(sql, [id], conn);
+  if (!rows || rows.length === 0) return null;
+  return formatUser(rows[0], true);
+}
+
+async function deleteAccount(userId, conn) {
+  // Pre-checks for active contributions in other users' projects
+  const [foreignFiles] = await conn.query(
+    `SELECT COUNT(*) as count FROM code_files f
+     JOIN projects p ON f.project_id = p.id
+     WHERE f.created_by = ? AND p.owner_id <> ?`,
+    [userId, userId]
+  );
+  if (foreignFiles[0].count > 0) {
+    const err = new Error('Cannot delete account: You have contributed code files in projects owned by other users. Those contributions cannot be silently deleted to protect their projects.');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const [foreignVersions] = await conn.query(
+    `SELECT COUNT(*) as count FROM code_versions v
+     JOIN code_files f ON v.file_id = f.id
+     JOIN projects p ON f.project_id = p.id
+     WHERE v.created_by = ? AND p.owner_id <> ?`,
+    [userId, userId]
+  );
+  if (foreignVersions[0].count > 0) {
+    const err = new Error('Cannot delete account: You have committed code versions in projects owned by other users. Those contributions cannot be silently deleted to protect their projects.');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const [foreignReviews] = await conn.query(
+    `SELECT COUNT(*) as count FROM reviews r
+     JOIN code_files f ON r.file_id = f.id
+     JOIN projects p ON f.project_id = p.id
+     WHERE r.reviewer_id = ? AND p.owner_id <> ?`,
+    [userId, userId]
+  );
+  if (foreignReviews[0].count > 0) {
+    const err = new Error('Cannot delete account: You have written code reviews in projects owned by other users. To preserve review history, your account cannot be deleted while those reviews remain active.');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const [foreignTasks] = await conn.query(
+    `SELECT COUNT(*) as count FROM tasks t
+     JOIN projects p ON t.project_id = p.id
+     WHERE t.created_by = ? AND p.owner_id <> ?`,
+    [userId, userId]
+  );
+  if (foreignTasks[0].count > 0) {
+    const err = new Error('Cannot delete account: You have created tasks in projects owned by other users. To preserve project tracking, your account cannot be deleted while those tasks remain active.');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  // Delete all projects owned by the user (cascades to all files, versions, reviews, tasks, members, notifications, activity_log, messages in those projects)
+  await conn.query('DELETE FROM projects WHERE owner_id = ?', [userId]);
+
+  // Clean user activity records
+  await conn.query('DELETE FROM activity_log WHERE user_id = ?', [userId]);
+
+  // Clean messages sent by user in other projects
+  await conn.query('DELETE FROM messages WHERE sender_id = ?', [userId]);
+
+  // Clean notifications for this user
+  await conn.query('DELETE FROM notifications WHERE user_id = ?', [userId]);
+
+  // Clean remaining memberships in other projects
+  await conn.query('DELETE FROM project_members WHERE user_id = ?', [userId]);
+
+  // Clean user settings
+  await conn.query('DELETE FROM user_settings WHERE user_id = ?', [userId]);
+
+  // Delete the user record
+  const [res] = await conn.query('DELETE FROM users WHERE id = ?', [userId]);
+  return res.affectedRows > 0;
+}
+
 module.exports = {
   findAuthByIdentifier,
   findById,
+  findAuthById,
   findByUsernameOrEmail,
   create,
   update,
+  updateProfile: update,
   list,
-  search
+  listAll: list,
+  search,
+  deleteAccount
 };

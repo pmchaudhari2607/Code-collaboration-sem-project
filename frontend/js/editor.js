@@ -14,8 +14,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
      fileData = await Store.getFile(fileId);
   } catch (err) {
-     alert('Access denied or file not found.');
-     window.location.href = 'projects.html';
+     UI.toast('Access denied or file not found.', 'error');
+     setTimeout(() => {
+        window.location.href = 'projects.html';
+     }, 1000);
      return;
   }
   

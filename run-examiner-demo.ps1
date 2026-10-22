@@ -20,12 +20,12 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Push-Location $scriptDir
 
 # 1. Verify Node.js
-Write-Host "[1/5] Checking Node.js Environment..." -ForegroundColor White
+Write-Host "[1/8] Checking Node.js Environment..." -ForegroundColor White
 $nodeVer = node --version
 Write-Host "      Node.js version: $nodeVer" -ForegroundColor Green
 
 # 2. Verify Schema Matching & Migrations
-Write-Host "`n[2/5] Verifying MySQL Database Schemas (Dev vs Test)..." -ForegroundColor White
+Write-Host "`n[2/8] Verifying MySQL Database Schemas (Dev vs Test)..." -ForegroundColor White
 node database/tools/schema-diff.js
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[FAIL] Schema diff check failed!" -ForegroundColor Red
@@ -33,7 +33,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # 3. Run Async / Await Static Audit
-Write-Host "`n[3/5] Running Async/Await Static Code Audit..." -ForegroundColor White
+Write-Host "`n[3/8] Running Async/Await Static Code Audit..." -ForegroundColor White
 node database/tools/await-audit.js
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[FAIL] Await audit found unawaited calls!" -ForegroundColor Red
@@ -41,7 +41,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # 4. Run Comprehensive MySQL Integration Suite (30 tests)
-Write-Host "`n[4/5] Running 30-Point MySQL API & Invitation Suite..." -ForegroundColor White
+Write-Host "`n[4/8] Running 30-Point MySQL API & Invitation Suite..." -ForegroundColor White
 node --test backend/tests/mysql-api.test.js
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[FAIL] MySQL API test suite failed!" -ForegroundColor Red
@@ -49,10 +49,34 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # 5. Run Live 2-Account End-to-End Collaboration Journey
-Write-Host "`n[5/5] Running Live 2-Account End-to-End Collaboration Workflow..." -ForegroundColor White
+Write-Host "`n[5/8] Running Live 2-Account End-to-End Collaboration Workflow..." -ForegroundColor White
 node backend/tests/workflow-e2e.js
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[FAIL] End-to-end workflow runner failed!" -ForegroundColor Red
+    Exit 1
+}
+
+# 6. Run Delete Account Safety & Foreign Key Cascade Suite
+Write-Host "`n[6/8] Running Delete Account Safety & Verification Suite..." -ForegroundColor White
+node --test backend/tests/delete-account.test.js
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[FAIL] Delete account test suite failed!" -ForegroundColor Red
+    Exit 1
+}
+
+# 7. Run Delete Project Owner-Only & Cascade Suite
+Write-Host "`n[7/8] Running Delete Project Owner-Only & Cascade Suite..." -ForegroundColor White
+node --test backend/tests/delete-project.test.js
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[FAIL] Delete project test suite failed!" -ForegroundColor Red
+    Exit 1
+}
+
+# 8. Run Comprehensive UI & Functionality Verification Suite
+Write-Host "`n[8/8] Running Full UI & Workflow Verification Suite..." -ForegroundColor White
+node backend/tests/verify-ui-repair.js
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[FAIL] Full UI verification runner failed!" -ForegroundColor Red
     Exit 1
 }
 

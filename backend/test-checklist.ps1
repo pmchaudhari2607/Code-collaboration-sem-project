@@ -185,7 +185,7 @@ try {
             title       = "Task for T1"
             description = "Preserve this description"
             priority    = "low"
-            assigned_to = "u2"
+            assigned_to = if ($user2Id) { $user2Id } else { "u2" }
             due_date    = "2026-11-20"
         } | ConvertTo-Json
         $tRes = Invoke-RestMethod -Uri "$baseUrl/tasks" -Method Post -Headers $headers1 -ContentType "application/json" -Body $initTaskBody

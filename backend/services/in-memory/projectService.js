@@ -146,10 +146,25 @@ exports.remove = (id) => {
   // Compute what to delete first
   const files = store.filter('code_files', f => f.project_id === id);
   const fileIds = files.map(f => f.id);
+  const reviews = store.filter('reviews', r => fileIds.includes(r.file_id));
+  const reviewIds = reviews.map(r => r.id);
+  const versions = store.filter('code_versions', v => fileIds.includes(v.file_id));
+  const versionIds = versions.map(v => v.id);
+  const tasks = store.filter('tasks', t => t.project_id === id);
+  const taskIds = tasks.map(t => t.id);
+  const members = store.filter('project_members', m => m.project_id === id);
+  const memberIds = members.map(m => m.id);
 
   // Apply cascade deletes
   store.removeWhere('messages', m => m.project_id === id);
-  store.removeWhere('notifications', n => n.project_id === id);
+  store.removeWhere('notifications', n =>
+    n.project_id === id ||
+    (n.type === 'invitation' && memberIds.includes(n.reference_id)) ||
+    (n.type === 'task' && taskIds.includes(n.reference_id)) ||
+    (n.type === 'review' && reviewIds.includes(n.reference_id)) ||
+    (n.type === 'resolution' && reviewIds.includes(n.reference_id)) ||
+    (n.type === 'version' && versionIds.includes(n.reference_id))
+  );
   store.removeWhere('activity', a => a.project_id === id);
   store.removeWhere('tasks', t => t.project_id === id);
   store.removeWhere('reviews', r => fileIds.includes(r.file_id));

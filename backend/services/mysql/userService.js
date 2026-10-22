@@ -1,7 +1,9 @@
 const userModel = require('../../models/userModel');
+const bcrypt = require('bcryptjs');
+const { withTransaction } = require('../../db/transaction');
 
 exports.list = async () => {
-  return userModel.listAll();
+  return userModel.list();
 };
 
 exports.search = async (q, reqUserId) => {
@@ -70,5 +72,31 @@ exports.updateMe = async (userId, data) => {
     throw err;
   }
 
-  return userModel.updateProfile(userId, patch);
+  return userModel.update(userId, patch);
+};
+
+exports.deleteMe = async (userId, password) => {
+  if (!password || typeof password !== 'string') {
+    const err = new Error('Password is required to confirm account deletion');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const user = await userModel.findAuthById(userId);
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const valid = bcrypt.compareSync(password, user.password_hash || user.password);
+  if (!valid) {
+    const err = new Error('Incorrect password. Account deletion cancelled.');
+    err.statusCode = 401;
+    throw err;
+  }
+
+  return withTransaction(async (conn) => {
+    return userModel.deleteAccount(userId, conn);
+  });
 };

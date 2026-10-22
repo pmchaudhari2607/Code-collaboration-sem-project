@@ -27,12 +27,6 @@ const _pageRender = () => {
       }
     };
     
-    document.getElementById('demo-login').onclick = (e) => {
-      e.preventDefault();
-      document.getElementById('login-identifier').value = 'prasanna';
-      document.getElementById('login-password').value = 'password';
-    };
-    
     const toggleBtn = document.getElementById('btn-toggle-password');
     if(toggleBtn) {
        toggleBtn.onclick = () => {

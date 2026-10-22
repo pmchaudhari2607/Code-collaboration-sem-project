@@ -76,7 +76,7 @@ class APIStore {
     deleteProject(id) { return this.request('/projects/' + id, { method: 'DELETE' }); }
     
     // Members
-    inviteMember(projectId, userId) { return this.request('/projects/' + projectId + '/members/invitations', { method: 'POST', body: { userId } }); }
+    inviteMember(projectId, userId, role = 'collaborator') { return this.request('/projects/' + projectId + '/members/invitations', { method: 'POST', body: { userId, role } }); }
     removeMember(projectId, userId) { return this.request('/projects/' + projectId + '/members/' + userId, { method: 'DELETE' }); }
 
     // Files
@@ -123,6 +123,7 @@ class APIStore {
     searchUsers(q) { return this.request('/users/search?q=' + encodeURIComponent(q)); }
     globalSearch(q) { return this.request('/search?q=' + encodeURIComponent(q)); }
     updateCurrentUserProfile(data) { return this.request('/users/me', { method: 'PUT', body: data }); }
+    deleteCurrentUser(password) { return this.request('/users/me', { method: 'DELETE', body: { password } }); }
 
     // Notifications
     getNotifications() { return this.request('/notifications'); }
