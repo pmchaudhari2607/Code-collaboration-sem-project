@@ -86,7 +86,7 @@
            <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="m-0">Code Files</h3>
               <div class="d-flex gap-2" id="files-action-btns" style="display:none;">
-                 <input type="file" id="file-upload-input" accept=".c,.h,.cpp,.java,.py,.txt,.js" style="display:none;">
+                 <input type="file" id="file-upload-input" accept=".c,.h,.cpp,.hpp,.cc,.cxx,.java,.py,.js,.mjs,.cjs,.txt" style="display:none;">
                  <button class="btn btn-secondary" id="btn-upload-file">
                     <span class="icon" data-icon="upload"></span> Upload File
                  </button>
@@ -167,14 +167,16 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">File Name *</label>
-            <input type="text" id="file-name" class="form-control" required placeholder="e.g. main.c">
+            <input type="text" id="file-name" class="form-control" required placeholder="e.g. main.cpp, app.js, Main.java">
           </div>
           <div class="form-group">
             <label class="form-label">Language</label>
             <select id="file-lang" class="form-control">
               <option value="C">C</option>
+              <option value="C++">C++</option>
               <option value="Java">Java</option>
               <option value="Python">Python</option>
+              <option value="JavaScript">JavaScript</option>
             </select>
           </div>
         </div>

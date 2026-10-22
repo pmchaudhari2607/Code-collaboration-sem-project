@@ -280,6 +280,31 @@ const _pageRender = async () => {
      }
   };
 
+  // Dynamic language detection when typing file name
+  const fileNameInput = document.getElementById('file-name');
+  const fileLangSelect = document.getElementById('file-lang');
+  if (fileNameInput && fileLangSelect) {
+     fileNameInput.addEventListener('input', () => {
+        const val = fileNameInput.value.trim();
+        if (val.includes('.')) {
+           const ext = val.split('.').pop().toLowerCase();
+           if (['cpp', 'hpp', 'cc', 'cxx'].includes(ext)) {
+              fileLangSelect.value = 'C++';
+           } else if (['js', 'mjs', 'cjs'].includes(ext)) {
+              fileLangSelect.value = 'JavaScript';
+           } else if (ext === 'java') {
+              fileLangSelect.value = 'Java';
+           } else if (ext === 'py') {
+              fileLangSelect.value = 'Python';
+           } else if (ext === 'c') {
+              fileLangSelect.value = 'C';
+           } else if (ext === 'h' && fileLangSelect.value !== 'C++') {
+              fileLangSelect.value = 'C';
+           }
+        }
+     });
+  }
+
   // Add File
   document.getElementById('form-add-file').onsubmit = async (e) => {
      e.preventDefault();
@@ -287,18 +312,49 @@ const _pageRender = async () => {
      btn.disabled = true;
      btn.textContent = 'Creating...';
      
+     let inputName = document.getElementById('file-name').value.trim();
+     const selectedLang = document.getElementById('file-lang').value;
+
+     // Only append default extension if user did not specify one
+     if (!inputName.includes('.')) {
+        const defaultExts = {
+           'C++': '.cpp',
+           'JavaScript': '.js',
+           'Java': '.java',
+           'Python': '.py',
+           'C': '.c'
+        };
+        inputName += (defaultExts[selectedLang] || '.c');
+     }
+
      const data = {
-        file_name: document.getElementById('file-name').value.trim(),
-        language: document.getElementById('file-lang').value
+        file_name: inputName,
+        language: selectedLang
      };
      
-     // add simple template
-     if (data.language === 'C') data.current_code = `#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}\n`;
-     if (data.language === 'Java') {
-        const clsName = data.file_name.split('.')[0] || 'Main';
+     // Starter templates for all supported languages
+     if (selectedLang === 'C++') {
+        if (inputName.endsWith('.hpp') || inputName.endsWith('.h')) {
+           const guard = inputName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+           data.current_code = `#ifndef ${guard}\n#define ${guard}\n\n// C++ declarations\n\n#endif\n`;
+        } else {
+           data.current_code = `#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}\n`;
+        }
+     } else if (selectedLang === 'JavaScript') {
+        data.current_code = `function main() {\n    console.log("Hello World");\n}\n\nmain();\n`;
+     } else if (selectedLang === 'Java') {
+        const clsName = inputName.split('.')[0] || 'Main';
         data.current_code = `public class ${clsName} {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}\n`;
+     } else if (selectedLang === 'Python') {
+        data.current_code = `def main():\n    print("Hello World")\n\nif __name__ == "__main__":\n    main()\n`;
+     } else if (selectedLang === 'C') {
+        if (inputName.endsWith('.h')) {
+           const guard = inputName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+           data.current_code = `#ifndef ${guard}\n#define ${guard}\n\n// C declarations\n\n#endif\n`;
+        } else {
+           data.current_code = `#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}\n`;
+        }
      }
-     if (data.language === 'Python') data.current_code = `def main():\n    print("Hello World")\n\nif __name__ == "__main__":\n    main()\n`;
      
      try {
        const newFile = await Store.createFile(projectId, data);
@@ -325,9 +381,11 @@ const _pageRender = async () => {
            const content = readEvt.target.result;
            const ext = file.name.split('.').pop().toLowerCase();
            let lang = 'C';
-           if (ext === 'java') lang = 'Java';
+           if (['cpp', 'hpp', 'cc', 'cxx'].includes(ext)) lang = 'C++';
+           else if (['js', 'mjs', 'cjs'].includes(ext)) lang = 'JavaScript';
+           else if (ext === 'java') lang = 'Java';
            else if (ext === 'py') lang = 'Python';
-           else if (['c', 'h', 'cpp', 'cc'].includes(ext)) lang = 'C';
+           else if (['c', 'h'].includes(ext)) lang = 'C';
            
            btnUpload.disabled = true;
            btnUpload.textContent = 'Uploading...';

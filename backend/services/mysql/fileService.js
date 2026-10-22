@@ -1,6 +1,7 @@
 const fileModel = require('../../models/fileModel');
 const versionModel = require('../../models/versionModel');
 const projectModel = require('../../models/projectModel');
+const { detectLanguage, getDefaultCode } = require('../../utils/language');
 
 exports.listByProject = async (projectId) => {
   return fileModel.listByProject(projectId);
@@ -32,21 +33,16 @@ exports.create = async (projectId, data, userId) => {
     throw err;
   }
 
+  const language = data.language || detectLanguage(fileName);
   let current_code = data.current_code || '';
-  if (!current_code && data.language) {
-    if (data.language === 'Java') {
-      current_code = `public class ${fileName.replace('.java', '')} {\n    public static void main(String[] args) {\n        \n    }\n}`;
-    } else if (data.language === 'Python') {
-      current_code = `def main():\n    pass\n\nif __name__ == "__main__":\n    main()`;
-    } else if (data.language === 'C') {
-      current_code = `#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}`;
-    }
+  if (!current_code) {
+    current_code = getDefaultCode(language, fileName);
   }
 
   return fileModel.createWithTransaction(
     projectId,
     fileName,
-    data.language || 'Java',
+    language,
     current_code,
     userId
   );

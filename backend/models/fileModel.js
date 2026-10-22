@@ -17,6 +17,8 @@ function formatFile(row) {
   };
 }
 
+const { detectLanguage, getDefaultCode } = require('../utils/language');
+
 async function validateLanguage(language, conn = null) {
   if (!language) return;
   const sql = 'SELECT name FROM languages WHERE name = ? AND is_file_language = 1 AND is_enabled = 1 LIMIT 1';
@@ -136,6 +138,9 @@ async function createWithTransaction(projectId, dataOrName, ...args) {
   }
 
   const runner = async (c) => {
+    if (!data.language) {
+      data.language = detectLanguage(data.file_name);
+    }
     await validateLanguage(data.language, c);
 
     // Duplicate check within project
@@ -148,13 +153,7 @@ async function createWithTransaction(projectId, dataOrName, ...args) {
 
     let currentCode = data.current_code || '';
     if (!currentCode && data.language) {
-      if (data.language === 'Java') {
-        currentCode = `public class ${data.file_name.replace('.java','')} {\n    public static void main(String[] args) {\n        \n    }\n}`;
-      } else if (data.language === 'Python') {
-        currentCode = `def main():\n    pass\n\nif __name__ == "__main__":\n    main()`;
-      } else if (data.language === 'C') {
-        currentCode = `#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}`;
-      }
+      currentCode = getDefaultCode(data.language, data.file_name);
     }
 
     const fileId = data.id || newId('f');
@@ -258,5 +257,7 @@ module.exports = {
   findById,
   createWithTransaction,
   updateDraftCode,
-  deleteWithTransaction
+  deleteWithTransaction,
+  detectLanguage,
+  getDefaultCode
 };

@@ -1,5 +1,6 @@
 const store = require('../../data/store');
 const { newId } = require('../../utils/id');
+const { detectLanguage, getDefaultCode } = require('../../utils/language');
 
 exports.listByProject = (projectId) => {
   const files = store.filter('code_files', f => f.project_id === projectId);
@@ -13,28 +14,31 @@ exports.listByProject = (projectId) => {
 };
 
 exports.create = (projectId, data, userId) => {
-  if (store.find('code_files', f => f.project_id === projectId && f.file_name === data.file_name)) {
+  const fileName = typeof data.file_name === 'string' ? data.file_name.trim() : '';
+  if (!fileName) {
+    const err = new Error('File name is required'); err.statusCode = 400; throw err;
+  }
+  if (store.find('code_files', f => f.project_id === projectId && f.file_name === fileName)) {
      const err = new Error('File name already exists in this project'); err.statusCode = 409; throw err;
   }
+  const language = data.language || detectLanguage(fileName, 'C');
   let current_code = data.current_code || '';
-  if (!current_code && data.language) {
-      if (data.language === 'Java') current_code = `public class ${data.file_name.replace('.java','')} {\n    public static void main(String[] args) {\n        \n    }\n}`;
-      else if (data.language === 'Python') current_code = `def main():\n    pass\n\nif __name__ == "__main__":\n    main()`;
-      else if (data.language === 'C') current_code = `#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}`;
+  if (!current_code) {
+    current_code = getDefaultCode(language, fileName);
   }
 
   const newFile = store.insert('code_files', {
     id: newId('f'),
     project_id: projectId,
-    file_name: data.file_name,
-    language: data.language,
+    file_name: fileName,
+    language: language,
     current_code: current_code,
     created_by: userId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   });
   
-  store.insert('activity', { id: newId('a'), project_id: projectId, user_id: userId, action_text: `created file ${data.file_name}.`, created_at: new Date().toISOString() });
+  store.insert('activity', { id: newId('a'), project_id: projectId, user_id: userId, action_text: `created file ${fileName}.`, created_at: new Date().toISOString() });
   
   const initialVersion = store.insert('code_versions', {
     id: newId('v'),

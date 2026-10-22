@@ -33,7 +33,7 @@ exports.create = (userId, data) => {
     throw err;
   }
   const category = data.category || 'Mixed';
-  if (!['C', 'Java', 'Python', 'Mixed'].includes(category)) {
+  if (!['C', 'C++', 'Java', 'Python', 'JavaScript', 'Mixed'].includes(category)) {
     const err = new Error('Invalid category');
     err.statusCode = 400;
     throw err;
@@ -118,7 +118,7 @@ exports.update = (id, data) => {
     patch.visibility = data.visibility;
   }
   if (data.category !== undefined) {
-    if (!['C', 'Java', 'Python', 'Mixed'].includes(data.category)) {
+    if (!['C', 'C++', 'Java', 'Python', 'JavaScript', 'Mixed'].includes(data.category)) {
       const err = new Error('Invalid category');
       err.statusCode = 400;
       throw err;
