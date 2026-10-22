@@ -64,11 +64,16 @@ const runOrderingExperiment = require('../../database/tools/order-experiment');
 describe('Stage 1: Foundation and Models Suite', () => {
 
   before(async () => {
-    // 0. Reset in-memory store oracle to canonical seed
+    // 0. Verify target database is strictly code_review_portal_test
+    const testPool = getPool('test');
+    const [dbRows] = await testPool.query('SELECT DATABASE() AS db');
+    assert.strictEqual(dbRows[0].db, 'code_review_portal_test', 'MUST run only on code_review_portal_test');
+
+    // 1. Reset in-memory store oracle to canonical seed
     store.reset();
-    // 1. Ensure test database migrations are applied
+    // 2. Ensure test database migrations are applied
     await migrate({ test: true });
-    // 2. Clean and seed test database
+    // 3. Clean and seed test database
     await seedDatabase({ reset: true, force: true });
   });
 

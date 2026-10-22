@@ -80,6 +80,11 @@ async function runWorkflow() {
   console.log('================================================================');
   console.log('Database: code_review_portal_test on port 3307');
   
+  // 0. Verify target database is strictly code_review_portal_test
+  const pool = getPool('test');
+  const [dbRows] = await pool.query('SELECT DATABASE() AS db');
+  assert.strictEqual(dbRows[0].db, 'code_review_portal_test', 'MUST run only on code_review_portal_test');
+
   // 1. Reset test DB with clean seed
   console.log('\n[1/8] Initializing test database with clean schema & seed...');
   await migrate({ isTest: true });
@@ -260,7 +265,6 @@ async function runWorkflow() {
   console.log(`  ✔ Bob accepted invitation`);
 
   // Verify in MySQL
-  const pool = getPool();
   const [memberRows] = await pool.query('SELECT * FROM project_members WHERE id = ?', [inviteMemberId]);
   assert.strictEqual(memberRows[0].status, 'accepted');
   assert.ok(memberRows[0].joined_at, 'joined_at timestamp must be set in MySQL');

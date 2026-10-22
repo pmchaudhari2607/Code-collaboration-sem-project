@@ -17,7 +17,10 @@ const devRoutes = require('./routes/devRoutes');
 const { ping } = require('./db/pool');
 
 const app = express();
-app.use(cors({ origin: config.CORS_ORIGIN }));
+const corsOrigins = (typeof config.CORS_ORIGIN === 'string' && config.CORS_ORIGIN.includes(','))
+  ? config.CORS_ORIGIN.split(',').map(s => s.trim())
+  : config.CORS_ORIGIN;
+app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
 
 app.get('/api/health', async (req, res) => {

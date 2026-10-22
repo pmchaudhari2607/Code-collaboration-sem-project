@@ -53,6 +53,11 @@ async function request(path, options = {}) {
 describe('Gate 1: MySQL API & Invitation Suite (code_review_portal_test)', () => {
 
   before(async () => {
+    // 0. Verify target database is strictly code_review_portal_test
+    const testPool = getPool('test');
+    const [dbRows] = await testPool.query('SELECT DATABASE() AS db');
+    assert.strictEqual(dbRows[0].db, 'code_review_portal_test', 'MUST run only on code_review_portal_test');
+
     // 1. Ensure migrations and clean test seed
     await migrate({ isTest: true });
     await seedDatabase({ isTest: true, reset: true });

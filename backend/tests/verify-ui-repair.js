@@ -1,6 +1,34 @@
 const assert = require('assert');
 
-const BASE_URL = 'http://localhost:5000/api';
+// Enforce test database environment strictly
+process.env.DB_ENABLED = 'true';
+process.env.DB_TARGET = 'test';
+process.env.DB_NAME_TEST = 'code_review_portal_test';
+
+const { getPool, close } = require('../db/pool');
+const seedDatabase = require('../../database/tools/seed');
+const migrate = require('../../database/tools/migrate');
+
+let server;
+let BASE_URL;
+
+async function startServer() {
+  const expressApp = require('../server');
+  return new Promise((resolve) => {
+    server = expressApp.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      BASE_URL = `http://127.0.0.1:${port}/api`;
+      resolve();
+    });
+  });
+}
+
+async function stopServer() {
+  if (server) {
+    await new Promise(resolve => server.close(resolve));
+    server = null;
+  }
+}
 
 async function req(path, options = {}) {
   const url = `${BASE_URL}${path}`;
@@ -22,6 +50,15 @@ async function req(path, options = {}) {
 
 async function run() {
   console.log('=== VERIFYING UI + BACKEND FUNCTIONALITY REPAIR ===\n');
+
+  // Verify target is strictly test db
+  const pool = getPool('test');
+  const [dbRows] = await pool.query('SELECT DATABASE() AS db');
+  assert.strictEqual(dbRows[0].db, 'code_review_portal_test', 'MUST run only on code_review_portal_test');
+
+  await migrate({ isTest: true });
+  await seedDatabase({ isTest: true, reset: true });
+  await startServer();
 
   // 1. Health check
   console.log('1. Checking backend health...');
@@ -307,9 +344,13 @@ async function run() {
   console.log('   ✔ Deleted user cannot log in (401)');
 
   console.log('\n=== ALL UI & FUNCTIONALITY CHECKS PASSED SUCCESSFULLY ===\n');
+  await stopServer();
+  await close();
 }
 
-run().catch(err => {
+run().catch(async (err) => {
   console.error('\n❌ VERIFICATION FAILED:', err);
+  try { await stopServer(); } catch (e) {}
+  try { await close(); } catch (e) {}
   process.exit(1);
 });

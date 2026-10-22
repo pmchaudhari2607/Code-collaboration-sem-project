@@ -4,7 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const DB_ENABLED = process.env.DB_ENABLED === 'true';
 const DB_TARGET = (process.env.DB_TARGET || 'dev').toLowerCase();
 const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = parseInt(process.env.DB_PORT || '3306', 10);
+const DB_PORT = parseInt(process.env.DB_PORT || '3307', 10);
 const DB_USER = process.env.DB_USER || '';
 const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_NAME = process.env.DB_NAME || '';
@@ -26,6 +26,17 @@ if (DB_ENABLED) {
   }
   checkRequired('DB_USER', DB_USER);
   checkRequired('DB_PASSWORD', DB_PASSWORD);
+
+  // Require strong JWT_SECRET in database mode; never allow weak defaults
+  checkRequired('JWT_SECRET', process.env.JWT_SECRET);
+  if (
+    process.env.JWT_SECRET === 'secret' ||
+    process.env.JWT_SECRET === 'your_jwt_secret' ||
+    process.env.JWT_SECRET.length < 8
+  ) {
+    console.error('[config] Insecure default JWT_SECRET in database mode. Please provide a strong secret in .env.');
+    process.exit(1);
+  }
 
   if (DB_TARGET === 'test') {
     checkRequired('DB_NAME_TEST', DB_NAME_TEST);
@@ -52,7 +63,7 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET || 'secret',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   ENABLE_DEV_MODE: process.env.ENABLE_DEV_MODE === 'true',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://127.0.0.1:5500',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:3000,http://localhost:3000',
   DB_ENABLED,
   DB_TARGET,
   DB_HOST,

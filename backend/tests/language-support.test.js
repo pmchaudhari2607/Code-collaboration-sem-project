@@ -67,6 +67,8 @@ describe('Language Support Test Suite', () => {
   before(async () => {
     await migrate();
     pool = getPool();
+    const [dbRows] = await pool.query('SELECT DATABASE() AS db');
+    assert.strictEqual(dbRows[0].db, 'code_review_portal_test', 'MUST run only on code_review_portal_test');
 
     // Start ephemeral backend server against code_review_portal_test
     const app = require('../server');
