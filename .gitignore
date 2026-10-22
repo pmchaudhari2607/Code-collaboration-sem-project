@@ -3,3 +3,5 @@ node_modules/
 backend/.env
 backups/
 *.log
+/SUBMISSION_REPORT.md
+/run-examiner-demo.ps1
