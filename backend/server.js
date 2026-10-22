@@ -14,13 +14,28 @@ const messageRoutes = require('./routes/messageRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const devRoutes = require('./routes/devRoutes');
 
+const { ping } = require('./db/pool');
+
 const app = express();
-app.use(cors({ origin: config.CORS_ORIGIN }));
+const corsOrigins = (typeof config.CORS_ORIGIN === 'string' && config.CORS_ORIGIN.includes(','))
+  ? config.CORS_ORIGIN.split(',').map(s => s.trim())
+  : config.CORS_ORIGIN;
+app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
 
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: "CodeReviewHub API is running" });
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'disabled';
+  if (config.DB_ENABLED) {
+    try {
+      const isUp = await ping();
+      dbStatus = isUp ? 'reachable' : 'unavailable';
+    } catch {
+      dbStatus = 'unavailable';
+    }
+  }
+  res.json({ success: true, message: "CodeReviewHub API is running", db: dbStatus });
 });
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -36,6 +51,10 @@ app.use('/api/dev', devRoutes);
 
 app.use(errorMiddleware);
 
-app.listen(config.PORT, () => {
-  console.log(`Server is running on port ${config.PORT}`);
-});
+if (require.main === module) {
+  app.listen(config.PORT, () => {
+    console.log(`Server is running on port ${config.PORT}`);
+  });
+}
+
+module.exports = app;

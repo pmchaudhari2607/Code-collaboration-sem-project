@@ -174,19 +174,38 @@ const _pageRender = async () => {
     console.error('Failed to load notifications/invitations:', err);
   }
   
-  // Widget 7: Fake Activity Chart
+  // Widget 7: Real Activity Overview Chart
   try {
     const chartContainer = document.getElementById('chart-container');
     const labelsContainer = document.getElementById('chart-labels');
     if (chartContainer && labelsContainer) {
+      const activity = await Store.getRecentActivity().catch(() => []);
+      const days = [];
+      const counts = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
+        
+        const matchCount = activity.filter(a => {
+          if (!a.created_at) return false;
+          return a.created_at.startsWith(dateStr);
+        }).length;
+        
+        days.push(dayLabel);
+        counts.push(matchCount);
+      }
+      
+      const maxCount = Math.max(...counts, 1);
       let html = '';
       let labelsHtml = '';
-      for(let i=6; i>=0; i--) {
-         const d = new Date();
-         d.setDate(d.getDate() - i);
-         const pct = Math.floor(Math.random() * 70) + 20;
-         html += `<div class="chart-bar" style="height:${pct}%" data-tooltip="${Math.floor((pct/100)*20)} events"></div>`;
-         labelsHtml += `<span>${d.toLocaleDateString('en-US',{weekday:'short'})}</span>`;
+      for (let i = 0; i < 7; i++) {
+        const count = counts[i];
+        const pct = count === 0 ? 3 : Math.max(12, Math.round((count / maxCount) * 100));
+        const tooltip = `${count} ${count === 1 ? 'activity event' : 'activity events'}`;
+        html += `<div class="chart-bar" style="height:${pct}%;" data-tooltip="${tooltip}"></div>`;
+        labelsHtml += `<span>${days[i]}</span>`;
       }
       chartContainer.innerHTML = html;
       labelsContainer.innerHTML = labelsHtml;
@@ -216,7 +235,7 @@ window.completeTask = async (id, cb) => {
 window.respondInvite = async (id, accept) => {
    try {
      await Store.respondToInvitation(id, accept);
-     UI.toast(accept ? 'Invitation accepted' : 'Invitation rejected', 'success');
+     UI.toast(accept ? 'Invitation accepted! You now have project access.' : 'Invitation declined.', 'success');
      document.dispatchEvent(new Event('crh_user_changed'));
    } catch (err) {
      UI.toast(err.message, 'error');

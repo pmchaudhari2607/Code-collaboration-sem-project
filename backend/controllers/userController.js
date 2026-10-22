@@ -1,23 +1,38 @@
 const userService = require('../services/userService');
 const { success } = require('../utils/response');
 
-exports.list = (req, res, next) => {
+exports.list = async (req, res, next) => {
   try {
-    success(res, 'Users', userService.list());
+    const data = await userService.list();
+    success(res, 'Users', data);
   } catch(e) { next(e); }
 };
-exports.search = (req, res, next) => {
+
+exports.search = async (req, res, next) => {
   try {
-    success(res, 'Search results', userService.search(req.query.q, req.user.id));
+    const data = await userService.search(req.query.q, req.user.id);
+    success(res, 'Search results', data);
   } catch(e) { next(e); }
 };
-exports.me = (req, res, next) => {
+
+exports.me = async (req, res, next) => {
   try {
-    success(res, 'Current user', userService.getMe(req.user.id));
+    const data = await userService.getMe(req.user.id);
+    success(res, 'Current user', data);
   } catch(e) { next(e); }
 };
-exports.updateMe = (req, res, next) => {
+
+exports.updateMe = async (req, res, next) => {
   try {
-    success(res, 'Profile updated', userService.updateMe(req.user.id, req.body));
+    const data = await userService.updateMe(req.user.id, req.body);
+    success(res, 'Profile updated', data);
+  } catch(e) { next(e); }
+};
+
+exports.deleteMe = async (req, res, next) => {
+  try {
+    const password = req.body.password;
+    await userService.deleteMe(req.user.id, password);
+    success(res, 'Account successfully deleted', { deleted: true });
   } catch(e) { next(e); }
 };

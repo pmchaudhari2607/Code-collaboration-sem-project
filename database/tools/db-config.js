@@ -5,7 +5,11 @@ const mysql = require(path.join(__dirname, '../../backend/node_modules/mysql2/pr
 // Load backend/.env
 dotenv.config({ path: path.join(__dirname, '../../backend/.env') });
 
-const dbName = process.env.DB_NAME || '';
+const isTest = process.argv.includes('--test') || process.env.DB_TARGET === 'test';
+const dbName = isTest
+  ? (process.env.DB_NAME_TEST || 'code_review_portal_test')
+  : (process.env.DB_NAME || 'code_review_portal_dev');
+
 if (!dbName.endsWith('_dev') && !dbName.endsWith('_test')) {
   console.error(`[db-config] Refusing database "${dbName}": name must end with _dev or _test.`);
   process.exit(1);
@@ -13,7 +17,7 @@ if (!dbName.endsWith('_dev') && !dbName.endsWith('_test')) {
 
 const config = {
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
+  port: parseInt(process.env.DB_PORT || '3307', 10),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: dbName,

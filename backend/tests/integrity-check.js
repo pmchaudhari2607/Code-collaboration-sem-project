@@ -1,11 +1,11 @@
 const assert = require('assert');
 const store = require('../data/store');
 const { newId } = require('../utils/id');
-const projectService = require('../services/projectService');
-const fileService = require('../services/fileService');
-const reviewService = require('../services/reviewService');
-const taskService = require('../services/taskService');
-const userService = require('../services/userService');
+const projectService = require('../services/in-memory/projectService');
+const fileService = require('../services/in-memory/fileService');
+const reviewService = require('../services/in-memory/reviewService');
+const taskService = require('../services/in-memory/taskService');
+const userService = require('../services/in-memory/userService');
 
 function assertNoOrphans(db) {
   const users = db.all('users');

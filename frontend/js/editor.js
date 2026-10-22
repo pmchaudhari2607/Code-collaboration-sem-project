@@ -14,8 +14,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
      fileData = await Store.getFile(fileId);
   } catch (err) {
-     alert('Access denied or file not found.');
-     window.location.href = 'projects.html';
+     UI.toast('Access denied or file not found.', 'error');
+     setTimeout(() => {
+        window.location.href = 'projects.html';
+     }, 1000);
      return;
   }
   
@@ -46,7 +48,25 @@ document.addEventListener('DOMContentLoaded', async () => {
      window.location.href = `code-editor.html?file=${fileId}`;
   });
 
-  const cmMode = fileData.language === 'Python' ? 'python' : (fileData.language === 'Java' ? 'text/x-java' : 'text/x-csrc');
+  let cmMode = 'text/x-csrc';
+  if (fileData.language === 'Python') {
+     cmMode = 'python';
+  } else if (fileData.language === 'Java') {
+     cmMode = 'text/x-java';
+  } else if (fileData.language === 'C++') {
+     cmMode = 'text/x-c++src';
+  } else if (fileData.language === 'JavaScript') {
+     cmMode = 'javascript';
+  } else if (fileData.language === 'C') {
+     cmMode = 'text/x-csrc';
+  } else {
+     const ext = (fileData.file_name || '').split('.').pop().toLowerCase();
+     if (['cpp', 'hpp', 'cc', 'cxx'].includes(ext)) cmMode = 'text/x-c++src';
+     else if (['js', 'mjs', 'cjs'].includes(ext)) cmMode = 'javascript';
+     else if (ext === 'py') cmMode = 'python';
+     else if (ext === 'java') cmMode = 'text/x-java';
+     else cmMode = 'text/x-csrc';
+  }
   const cmTheme = document.body.classList.contains('theme-dark') ? 'material-darker' : 'default';
   
   const editor = CodeMirror.fromTextArea(document.getElementById('code-textarea'), {

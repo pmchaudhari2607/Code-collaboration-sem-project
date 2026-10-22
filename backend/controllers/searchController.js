@@ -1,6 +1,9 @@
 const searchService = require('../services/searchService');
 const { success } = require('../utils/response');
 
-exports.globalSearch = (req, res, next) => {
-  try { success(res, 'Search results', searchService.globalSearch(req.query.q, req.user.id)); } catch(e) { next(e); }
+exports.globalSearch = async (req, res, next) => {
+  try {
+    const data = await searchService.globalSearch(req.query.q, req.user.id);
+    success(res, 'Search results', data);
+  } catch(e) { next(e); }
 };

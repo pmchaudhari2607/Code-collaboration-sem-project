@@ -27,47 +27,55 @@ const Layout = {
   },
   
   renderShell: async () => {
-    const user = await Store.getCurrentUser();
-    if (!user) {
-        localStorage.removeItem('crh_current_user');
-        window.location.href = 'login.html';
-        return;
+    let user = null;
+    try {
+      user = await Store.getCurrentUser();
+    } catch (e) {
+      console.warn('Failed to fetch current user:', e);
     }
-    const users = await Store.getUsers();
+    
+    if (!user) {
+      Store.setToken(null);
+      localStorage.removeItem('crh_current_user');
+      window.location.href = 'login.html';
+      return;
+    }
+    localStorage.setItem('crh_current_user', JSON.stringify(user));
+    
     const appContainer = document.querySelector('.app-container');
     if (!appContainer) return;
     
     const sidebarHtml = `
       <div class="sidebar-header">
-        ${window.icon ? window.icon('code') : window.icon('code')}
-        <span>CodeReviewHub</span>
+        ${window.icon ? window.icon('code') : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>'}
+        <span style="font-weight:700; font-size:18px; letter-spacing:-0.3px;">CodeReviewHub</span>
       </div>
       <div class="sidebar-nav">
         <div>
           <div class="nav-group-title">Main</div>
-          <a href="dashboard.html" class="nav-item ${location.pathname.includes('dashboard')?'active':''}">${window.icon ? window.icon('home') : window.icon('home')} <span>Dashboard</span></a>
-          <a href="projects.html" class="nav-item ${location.pathname.includes('project')?'active':''}">${window.icon ? window.icon('folder') : window.icon('folder')} <span>Projects</span></a>
-          <a href="reviews.html" class="nav-item ${location.pathname.includes('reviews')?'active':''}">${window.icon ? window.icon('messageSquare') : window.icon('messageSquare')} <span>Reviews</span></a>
-          <a href="tasks.html" class="nav-item ${location.pathname.includes('tasks')?'active':''}">${window.icon ? window.icon('check') : window.icon('check')} <span>Tasks</span></a>
-          <a href="team.html" class="nav-item ${location.pathname.includes('team')?'active':''}">${window.icon ? window.icon('users') : window.icon('users')} <span>Team</span></a>
-          <a href="analytics.html" class="nav-item ${location.pathname.includes('analytics')?'active':''}">${window.icon ? window.icon('pieChart') : window.icon('pieChart')} <span>Analytics</span></a>
-          <a href="calendar.html" class="nav-item ${location.pathname.includes('calendar')?'active':''}">${window.icon ? window.icon('calendar') : window.icon('calendar')} <span>Calendar</span></a>
-          <a href="messages.html" class="nav-item ${location.pathname.includes('messages')?'active':''}">${window.icon ? window.icon('messageSquare') : window.icon('messageSquare')} <span>Messages</span></a>
+          <a href="dashboard.html" class="nav-item ${location.pathname.includes('dashboard')?'active':''}">${window.icon('home')} <span>Dashboard</span></a>
+          <a href="projects.html" class="nav-item ${location.pathname.includes('project') && !location.pathname.includes('editor')?'active':''}">${window.icon('folder')} <span>Projects</span></a>
+          <a href="tasks.html" class="nav-item ${location.pathname.includes('tasks')?'active':''}">${window.icon('check')} <span>Tasks</span></a>
+          <a href="reviews.html" class="nav-item ${location.pathname.includes('reviews')?'active':''}">${window.icon('messageSquare')} <span>Reviews</span></a>
+          <a href="team.html" class="nav-item ${location.pathname.includes('team')?'active':''}">${window.icon('users')} <span>Team</span></a>
+          <a href="analytics.html" class="nav-item ${location.pathname.includes('analytics')?'active':''}">${window.icon('pieChart')} <span>Analytics</span></a>
+          <a href="messages.html" class="nav-item ${location.pathname.includes('messages')?'active':''}">${window.icon('messageSquare')} <span>Messages</span></a>
+          <a href="calendar.html" class="nav-item ${location.pathname.includes('calendar')?'active':''}">${window.icon('calendar')} <span>Calendar</span></a>
         </div>
         <div>
           <div class="nav-group-title">Account</div>
-          <a href="notifications.html" class="nav-item ${location.pathname.includes('notification')?'active':''}">${window.icon ? window.icon('bell') : window.icon('bell')} <span>Notifications</span> <span id="sidebar-notif-badge" class="badge badge-accent" style="margin-left:auto; display:none;">0</span></a>
-          <a href="profile.html" class="nav-item ${location.pathname.includes('profile')?'active':''}">${window.icon ? window.icon('user') : window.icon('user')} <span>Profile</span></a>
-          <a href="settings.html" class="nav-item ${location.pathname.includes('settings')?'active':''}">${window.icon ? window.icon('settings') : window.icon('settings')} <span>Settings</span></a>
-          <a href="#" id="btn-logout" class="nav-item">${window.icon ? window.icon('logOut') : window.icon('logOut')} <span>Logout</span></a>
+          <a href="notifications.html" class="nav-item ${location.pathname.includes('notification')?'active':''}">${window.icon('bell')} <span>Notifications</span> <span id="sidebar-notif-badge" class="badge badge-accent" style="margin-left:auto; display:none;">0</span></a>
+          <a href="profile.html" class="nav-item ${location.pathname.includes('profile')?'active':''}">${window.icon('user')} <span>Profile</span></a>
+          <a href="settings.html" class="nav-item ${location.pathname.includes('settings')?'active':''}">${window.icon('settings')} <span>Settings</span></a>
+          <a href="#" id="btn-logout" class="nav-item">${window.icon('logOut')} <span>Logout</span></a>
         </div>
       </div>
       <div class="sidebar-footer">
-        <div class="d-flex align-items-center gap-1 user-info">
+        <div class="d-flex align-items-center gap-2 user-info">
           ${UI.getAvatarHtml(user.full_name)}
-          <div style="min-width:0;">
-            <div class="text-bold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis; color:var(--sidebar-text);">${Utils.escapeHtml(user.full_name)}</div>
-            <div class="text-small" style="color:var(--sidebar-muted);">@${Utils.escapeHtml(user.username)}</div>
+          <div style="min-width:0; overflow:hidden;">
+            <div class="text-bold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis; color:var(--sidebar-text); font-size:13px;">${Utils.escapeHtml(user.full_name)}</div>
+            <div class="text-small" style="color:var(--sidebar-muted); font-size:11px;">@${Utils.escapeHtml(user.username)}</div>
           </div>
         </div>
       </div>
@@ -77,51 +85,43 @@ const Layout = {
     sidebar.className = 'sidebar';
     sidebar.innerHTML = sidebarHtml;
     
-    const userOptions = users.map(u => `<option value="${u.id}" ${u.id === user.id ? 'selected' : ''}>${u.full_name}</option>`).join('');
-    
     const topbarHtml = `
       <div class="topbar-left">
-        <button id="btn-mobile-menu" class="btn-ghost" style="display:none;">${window.icon('menu')}</button>
-        <div class="search-container" style="position:relative; width: 300px;">
-          <div style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-secondary); width:16px;">${window.icon('search')}</div>
-          <input type="text" id="global-search" class="form-control" placeholder="Search projects, files..." style="padding-left:36px; border-radius:var(--radius-pill);">
-          <div id="search-results" class="card" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:8px; padding:12px; max-height:400px; overflow-y:auto; z-index:100;"></div>
+        <button id="btn-mobile-menu" class="btn-ghost" style="display:none;" aria-label="Toggle menu">${window.icon('menu')}</button>
+        <div class="search-container" style="position:relative; width: 320px;">
+          <div style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-secondary); width:16px; pointer-events:none;">${window.icon('search')}</div>
+          <input type="text" id="global-search" class="form-control" placeholder="Search for projects, files, tasks..." style="padding-left:36px; border-radius:var(--radius-pill); font-size:13px;">
+          <div id="search-results" class="card" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:8px; padding:12px; max-height:400px; overflow-y:auto; z-index:100; box-shadow:var(--shadow-card-hover);"></div>
         </div>
       </div>
       <div class="topbar-right">
-        <button id="btn-theme-toggle" class="btn-ghost" title="Toggle theme">
+        <button id="btn-theme-toggle" class="btn-ghost" title="Toggle theme" aria-label="Toggle theme">
           ${document.body.classList.contains('theme-dark') ? window.icon('sun') : window.icon('moon')}
         </button>
         <div style="position:relative;">
-          <button id="btn-notif" class="btn-ghost" title="Notifications">
+          <button id="btn-notif" class="btn-ghost" title="Notifications" aria-label="Notifications">
              ${window.icon('bell')}
              <span id="topbar-notif-badge" style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--danger-text); border-radius:50%; display:none;"></span>
           </button>
         </div>
-        ${(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? `
-        <div class="d-flex align-items-center gap-1" style="border-left:1px solid var(--border); padding-left:16px;">
-          <span class="text-small text-muted">Acting as:</span>
-          <select id="acting-as-select" class="form-control" style="width:140px; padding:6px; font-size:13px;">
-            ${userOptions}
-          </select>
-        </div>` : ''}
-        ${UI.getAvatarHtml(user.full_name)}
+        <a href="profile.html" title="View Profile" style="display:flex; align-items:center; text-decoration:none;">
+          ${UI.getAvatarHtml(user.full_name)}
+        </a>
       </div>
     `;
     
-    let topbar = document.querySelector('.topbar');
-    if (!topbar) {
-        topbar = document.createElement('div');
-        topbar.className = 'topbar';
-    }
+    let topbar = document.createElement('div');
+    topbar.className = 'topbar';
     topbar.innerHTML = topbarHtml;
     
-    let existingSidebar = document.querySelector('.sidebar');
+    const existingSidebar = appContainer.querySelector('.sidebar');
     if (existingSidebar) existingSidebar.remove();
     appContainer.prepend(sidebar);
     
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent && !document.querySelector('.topbar')) {
+    const mainContent = appContainer.querySelector('.main-content');
+    if (mainContent) {
+      const existingTopbar = mainContent.querySelector('.topbar');
+      if (existingTopbar) existingTopbar.remove();
       mainContent.prepend(topbar);
     }
     
@@ -129,11 +129,16 @@ const Layout = {
     if (window.innerWidth < 768 && mobileMenuBtn) {
        mobileMenuBtn.style.display = 'block';
     }
+
+    // Defensively guarantee no legacy acting-as element can ever exist in DOM
+    const legacySwitcher = document.getElementById('acting-as-select') || document.querySelector('.acting-as');
+    if (legacySwitcher) legacySwitcher.remove();
   },
   
   bindEvents: () => {
     document.getElementById('btn-logout')?.addEventListener('click', (e) => {
       e.preventDefault();
+      Store.setToken(null);
       localStorage.removeItem('crh_current_user');
       window.location.href = 'login.html';
     });
@@ -142,15 +147,6 @@ const Layout = {
       const isDark = document.body.classList.toggle('theme-dark');
       localStorage.setItem('crh_theme', isDark ? 'dark' : 'light');
       e.currentTarget.innerHTML = isDark ? window.icon('sun') : window.icon('moon');
-    });
-    
-    document.getElementById('acting-as-select')?.addEventListener('change', async (e) => {
-      try {
-          await Store.devImpersonate(e.target.value);
-          window.location.reload();
-      } catch (err) {
-          console.error('Dev impersonation failed', err);
-      }
     });
     
     document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
@@ -200,16 +196,20 @@ const Layout = {
   },
   
   updateNotificationsBadge: async () => {
-    const notifs = await Store.getNotifications();
-    const unread = notifs.filter(n => !n.is_read).length;
-    const sBadge = document.getElementById('sidebar-notif-badge');
-    const tBadge = document.getElementById('topbar-notif-badge');
-    if (unread > 0) {
-       if (sBadge) { sBadge.style.display = 'inline-block'; sBadge.textContent = unread; }
-       if (tBadge) tBadge.style.display = 'block';
-    } else {
-       if (sBadge) sBadge.style.display = 'none';
-       if (tBadge) tBadge.style.display = 'none';
+    try {
+      const notifs = await Store.getNotifications();
+      const unread = notifs.filter(n => !n.is_read).length;
+      const sBadge = document.getElementById('sidebar-notif-badge');
+      const tBadge = document.getElementById('topbar-notif-badge');
+      if (unread > 0) {
+         if (sBadge) { sBadge.style.display = 'inline-block'; sBadge.textContent = unread; }
+         if (tBadge) tBadge.style.display = 'block';
+      } else {
+         if (sBadge) sBadge.style.display = 'none';
+         if (tBadge) tBadge.style.display = 'none';
+      }
+    } catch (e) {
+      // quiet fail for badge
     }
   }
 };

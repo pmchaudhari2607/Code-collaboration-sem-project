@@ -122,11 +122,14 @@ const UI = {
   getLanguageBadge: (lang) => {
     const colors = {
       'C': { bg: '#E2E8F0', text: '#334155' },
+      'C++': { bg: '#DBEAFE', text: '#1E40AF' },
       'Java': { bg: '#FEE2E2', text: '#991B1B' },
-      'Python': { bg: '#FEF3C7', text: '#92400E' }
+      'Python': { bg: '#FEF3C7', text: '#92400E' },
+      'JavaScript': { bg: '#FEF08A', text: '#854D0E' },
+      'Mixed': { bg: '#F3E8FF', text: '#6B21A8' }
     };
     const style = colors[lang] || { bg: '#E2E8F0', text: '#334155' };
-    return `<span class="badge" style="background-color: ${style.bg}; color: ${style.text};">${Utils.escapeHtml(lang)}</span>`;
+    return `<span class="badge" style="background-color: ${style.bg}; color: ${style.text};">${Utils.escapeHtml(lang || 'Unknown')}</span>`;
   },
   
   getReviewTypeBadge: (type) => {

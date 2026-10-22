@@ -79,9 +79,9 @@ const _pageRender = async () => {
   };
   
   const renderFiles = () => {
-     if (projectData.userRole === 'owner' || projectData.userRole === 'collaborator') {
-        document.getElementById('btn-add-file').style.display = 'inline-flex';
-     }
+     const canEditFiles = projectData.userRole === 'owner' || projectData.userRole === 'collaborator';
+     const fileActions = document.getElementById('files-action-btns');
+     if (fileActions) fileActions.style.display = canEditFiles ? 'flex' : 'none';
      
      const tbody = document.querySelector('#table-files tbody');
      if (projectData.files.length === 0) {
@@ -280,6 +280,31 @@ const _pageRender = async () => {
      }
   };
 
+  // Dynamic language detection when typing file name
+  const fileNameInput = document.getElementById('file-name');
+  const fileLangSelect = document.getElementById('file-lang');
+  if (fileNameInput && fileLangSelect) {
+     fileNameInput.addEventListener('input', () => {
+        const val = fileNameInput.value.trim();
+        if (val.includes('.')) {
+           const ext = val.split('.').pop().toLowerCase();
+           if (['cpp', 'hpp', 'cc', 'cxx'].includes(ext)) {
+              fileLangSelect.value = 'C++';
+           } else if (['js', 'mjs', 'cjs'].includes(ext)) {
+              fileLangSelect.value = 'JavaScript';
+           } else if (ext === 'java') {
+              fileLangSelect.value = 'Java';
+           } else if (ext === 'py') {
+              fileLangSelect.value = 'Python';
+           } else if (ext === 'c') {
+              fileLangSelect.value = 'C';
+           } else if (ext === 'h' && fileLangSelect.value !== 'C++') {
+              fileLangSelect.value = 'C';
+           }
+        }
+     });
+  }
+
   // Add File
   document.getElementById('form-add-file').onsubmit = async (e) => {
      e.preventDefault();
@@ -287,18 +312,49 @@ const _pageRender = async () => {
      btn.disabled = true;
      btn.textContent = 'Creating...';
      
+     let inputName = document.getElementById('file-name').value.trim();
+     const selectedLang = document.getElementById('file-lang').value;
+
+     // Only append default extension if user did not specify one
+     if (!inputName.includes('.')) {
+        const defaultExts = {
+           'C++': '.cpp',
+           'JavaScript': '.js',
+           'Java': '.java',
+           'Python': '.py',
+           'C': '.c'
+        };
+        inputName += (defaultExts[selectedLang] || '.c');
+     }
+
      const data = {
-        file_name: document.getElementById('file-name').value.trim(),
-        language: document.getElementById('file-lang').value
+        file_name: inputName,
+        language: selectedLang
      };
      
-     // add simple template
-     if (data.language === 'C') data.current_code = `#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}\n`;
-     if (data.language === 'Java') {
-        const clsName = data.file_name.split('.')[0] || 'Main';
+     // Starter templates for all supported languages
+     if (selectedLang === 'C++') {
+        if (inputName.endsWith('.hpp') || inputName.endsWith('.h')) {
+           const guard = inputName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+           data.current_code = `#ifndef ${guard}\n#define ${guard}\n\n// C++ declarations\n\n#endif\n`;
+        } else {
+           data.current_code = `#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}\n`;
+        }
+     } else if (selectedLang === 'JavaScript') {
+        data.current_code = `function main() {\n    console.log("Hello World");\n}\n\nmain();\n`;
+     } else if (selectedLang === 'Java') {
+        const clsName = inputName.split('.')[0] || 'Main';
         data.current_code = `public class ${clsName} {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}\n`;
+     } else if (selectedLang === 'Python') {
+        data.current_code = `def main():\n    print("Hello World")\n\nif __name__ == "__main__":\n    main()\n`;
+     } else if (selectedLang === 'C') {
+        if (inputName.endsWith('.h')) {
+           const guard = inputName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+           data.current_code = `#ifndef ${guard}\n#define ${guard}\n\n// C declarations\n\n#endif\n`;
+        } else {
+           data.current_code = `#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}\n`;
+        }
      }
-     if (data.language === 'Python') data.current_code = `def main():\n    print("Hello World")\n\nif __name__ == "__main__":\n    main()\n`;
      
      try {
        const newFile = await Store.createFile(projectId, data);
@@ -311,6 +367,147 @@ const _pageRender = async () => {
      }
   };
   
+  // File Upload
+  const btnUpload = document.getElementById('btn-upload-file');
+  const fileInput = document.getElementById('file-upload-input');
+  if (btnUpload && fileInput) {
+     btnUpload.onclick = () => fileInput.click();
+     fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (readEvt) => {
+           const content = readEvt.target.result;
+           const ext = file.name.split('.').pop().toLowerCase();
+           let lang = 'C';
+           if (['cpp', 'hpp', 'cc', 'cxx'].includes(ext)) lang = 'C++';
+           else if (['js', 'mjs', 'cjs'].includes(ext)) lang = 'JavaScript';
+           else if (ext === 'java') lang = 'Java';
+           else if (ext === 'py') lang = 'Python';
+           else if (['c', 'h'].includes(ext)) lang = 'C';
+           
+           btnUpload.disabled = true;
+           btnUpload.textContent = 'Uploading...';
+           try {
+              await Store.createFile(projectId, {
+                 file_name: file.name,
+                 language: lang,
+                 current_code: content
+              });
+              UI.toast(`Uploaded ${file.name} successfully!`, 'success');
+              projectData = await Store.getProject(projectId);
+              renderOverview();
+              renderFiles();
+           } catch (err) {
+              UI.toast(err.message, 'error');
+           } finally {
+              btnUpload.disabled = false;
+              btnUpload.innerHTML = '<span class="icon" data-icon="upload"></span> Upload File';
+              fileInput.value = '';
+           }
+        };
+        reader.readAsText(file);
+     };
+  }
+
+  // Member Invitation Search & Invite
+  const searchInput = document.getElementById('invite-search-input');
+  const resultsContainer = document.getElementById('invite-user-results');
+  const selectedUserIdInput = document.getElementById('selected-invite-user-id');
+  const selectedUserCard = document.getElementById('selected-user-card');
+  const selectedUserName = document.getElementById('selected-user-name');
+  const selectedUserHandle = document.getElementById('selected-user-handle');
+  const selectedUserAvatar = document.getElementById('selected-user-avatar');
+  const submitInviteBtn = document.getElementById('btn-submit-invitation');
+  const clearSelectedBtn = document.getElementById('btn-clear-selected-user');
+  
+  const selectUserForInvite = (u) => {
+     selectedUserIdInput.value = u.id;
+     selectedUserName.textContent = u.full_name;
+     selectedUserHandle.textContent = `@${u.username}`;
+     selectedUserAvatar.innerHTML = UI.getAvatarHtml(u.full_name);
+     selectedUserCard.style.display = 'flex';
+     submitInviteBtn.disabled = false;
+  };
+  
+  if (clearSelectedBtn) {
+     clearSelectedBtn.onclick = () => {
+        selectedUserIdInput.value = '';
+        selectedUserCard.style.display = 'none';
+        submitInviteBtn.disabled = true;
+     };
+  }
+  
+  if (searchInput && resultsContainer) {
+     searchInput.oninput = Utils.debounce(async (e) => {
+        const q = e.target.value.trim();
+        if (q.length < 2) {
+           resultsContainer.innerHTML = '<div class="text-muted text-small text-center py-3">Type at least 2 characters to search.</div>';
+           return;
+        }
+        resultsContainer.innerHTML = '<div class="text-muted text-small text-center py-2">Searching...</div>';
+        try {
+           const matches = await Store.searchUsers(q);
+           const currentMemberIds = new Set(projectData.members.map(m => m.user_id));
+           const available = matches.filter(u => !currentMemberIds.has(u.id));
+           
+           if (available.length === 0) {
+              resultsContainer.innerHTML = '<div class="text-muted text-small text-center py-3">No matching available users found.</div>';
+              return;
+           }
+           resultsContainer.innerHTML = available.map(u => `
+              <div class="list-item justify-content-between p-2 mb-1" style="cursor:pointer;" onclick='window._selectUser(${JSON.stringify(u).replace(/'/g, "&apos;")})'>
+                 <div class="d-flex align-items-center gap-2">
+                    ${UI.getAvatarHtml(u.full_name)}
+                    <div>
+                       <div class="text-bold text-small">${Utils.escapeHtml(u.full_name)}</div>
+                       <div class="text-small text-muted">@${Utils.escapeHtml(u.username)}</div>
+                    </div>
+                 </div>
+                 <button type="button" class="btn btn-secondary text-small" style="padding:4px 8px;">Select</button>
+              </div>
+           `).join('');
+        } catch (err) {
+           resultsContainer.innerHTML = `<div class="text-danger text-small text-center py-2">${Utils.escapeHtml(err.message)}</div>`;
+        }
+     }, 250);
+  }
+  
+  window._selectUser = (u) => selectUserForInvite(u);
+  
+  const formInvite = document.getElementById('form-invite-member');
+  if (formInvite) {
+     formInvite.onsubmit = async (e) => {
+        e.preventDefault();
+        const targetUserId = selectedUserIdInput.value;
+        if (!targetUserId) {
+           UI.toast('Please select a user to invite', 'error');
+           return;
+        }
+        submitInviteBtn.disabled = true;
+        submitInviteBtn.textContent = 'Sending...';
+        const role = document.getElementById('invite-role')?.value || 'collaborator';
+        try {
+           await Store.inviteMember(projectId, targetUserId, role);
+           UI.toast('Invitation sent successfully!', 'success');
+           UI.closeModal('modal-invite-member');
+           if (searchInput) searchInput.value = '';
+           if (resultsContainer) resultsContainer.innerHTML = '<div class="text-muted text-small text-center py-3">Type at least 2 characters to search.</div>';
+           selectedUserIdInput.value = '';
+           selectedUserCard.style.display = 'none';
+           projectData = await Store.getProject(projectId);
+           renderOverview();
+           renderMembers();
+        } catch (err) {
+           UI.toast(err.message, 'error');
+        } finally {
+           submitInviteBtn.disabled = false;
+           submitInviteBtn.textContent = 'Send Invitation';
+        }
+     };
+  }
+
   window.removeMember = async (userId, name) => {
       const confirmed = await UI.confirmDialog('Remove Member', `Are you sure you want to remove ${name} from this project?`, 'Remove', 'danger');
       if (confirmed) {
@@ -324,6 +521,49 @@ const _pageRender = async () => {
           }
       }
   };
+
+  // Owner Delete Project
+  window.openDeleteProjectModal = () => {
+    if (projectData.userRole !== 'owner') {
+      UI.toast('Only the project owner can delete this project.', 'error');
+      return;
+    }
+    const nameEl = document.getElementById('delete-proj-name');
+    if (nameEl) nameEl.textContent = projectData.name;
+    const errEl = document.getElementById('delete-proj-error');
+    if (errEl) {
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+    }
+    UI.openModal('modal-delete-project');
+  };
+
+  const confirmDeleteProjectBtn = document.getElementById('btn-confirm-delete-project');
+  if (confirmDeleteProjectBtn) {
+    confirmDeleteProjectBtn.onclick = async () => {
+      if (projectData.userRole !== 'owner') {
+        UI.toast('Permission denied: only project owner can delete this project.', 'error');
+        return;
+      }
+      try {
+        confirmDeleteProjectBtn.disabled = true;
+        confirmDeleteProjectBtn.innerHTML = 'Deleting...';
+        await Store.deleteProject(projectId);
+        UI.closeModal('modal-delete-project');
+        sessionStorage.setItem('project_deleted_toast', `Project "${projectData.name}" was successfully deleted.`);
+        window.location.href = 'projects.html';
+      } catch (err) {
+        confirmDeleteProjectBtn.disabled = false;
+        confirmDeleteProjectBtn.innerHTML = `<span class="icon" data-icon="trash"></span> Delete Project Permanently`;
+        const errEl = document.getElementById('delete-proj-error');
+        if (errEl) {
+          errEl.textContent = err.message || 'Failed to delete project.';
+          errEl.style.display = 'block';
+        }
+        UI.toast(err.message || 'Failed to delete project.', 'error');
+      }
+    };
+  }
 };
 document.addEventListener('DOMContentLoaded', _pageRender);
 document.addEventListener('crh_user_changed', _pageRender);

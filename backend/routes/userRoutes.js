@@ -8,5 +8,6 @@ router.get('/', userController.list);
 router.get('/search', userController.search);
 router.get('/me', userController.me);
 router.put('/me', userController.updateMe);
+router.delete('/me', userController.deleteMe);
 
 module.exports = router;

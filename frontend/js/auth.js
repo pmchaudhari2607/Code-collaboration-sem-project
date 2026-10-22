@@ -27,12 +27,6 @@ const _pageRender = () => {
       }
     };
     
-    document.getElementById('demo-login').onclick = (e) => {
-      e.preventDefault();
-      document.getElementById('login-identifier').value = 'prasanna';
-      document.getElementById('login-password').value = 'password';
-    };
-    
     const toggleBtn = document.getElementById('btn-toggle-password');
     if(toggleBtn) {
        toggleBtn.onclick = () => {
@@ -71,7 +65,7 @@ const _pageRender = () => {
       btn.innerHTML = 'Signing Up...';
       
       try {
-        await Store.register({ full_name: name, username, email, password, confirm_password: confirm }); // Mock-only: storing plaintext password
+        await Store.register({ full_name: name, username, email, password, confirm_password: confirm });
         UI.toast('Account created successfully!', 'success');
         setTimeout(() => {
           window.location.href = 'login.html';

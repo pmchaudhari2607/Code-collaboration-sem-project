@@ -1,6 +1,12 @@
 const _pageRender = async () => {
   UI.renderSkeleton('projects-grid', 3);
   
+  const flashToast = sessionStorage.getItem('project_deleted_toast');
+  if (flashToast) {
+    sessionStorage.removeItem('project_deleted_toast');
+    UI.toast(flashToast, 'success');
+  }
+
   if (Utils.getQueryParam('create') === 'true') {
      UI.openModal('modal-create-project');
   }

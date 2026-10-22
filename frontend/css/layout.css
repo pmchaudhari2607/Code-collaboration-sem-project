@@ -110,7 +110,7 @@
   margin-top: 4px;
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 899px) {
   .sidebar { width: 80px; }
   .sidebar-header span { display: none; }
   .nav-item span:not(.badge) { display: none; }

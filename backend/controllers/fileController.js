@@ -1,24 +1,51 @@
 const fileService = require('../services/fileService');
 const { success } = require('../utils/response');
 
-exports.listByProject = (req, res, next) => {
-  try { success(res, 'Files', fileService.listByProject(req.params.projectId)); } catch(e) { next(e); }
+exports.listByProject = async (req, res, next) => {
+  try {
+    const data = await fileService.listByProject(req.params.projectId);
+    success(res, 'Files', data);
+  } catch(e) { next(e); }
 };
-exports.create = (req, res, next) => {
-  try { success(res, 'File created', fileService.create(req.params.projectId, req.body, req.user.id), 201); } catch(e) { next(e); }
+
+exports.create = async (req, res, next) => {
+  try {
+    const data = await fileService.create(req.params.projectId, req.body, req.user.id);
+    success(res, 'File created', data, 201);
+  } catch(e) { next(e); }
 };
-exports.getById = (req, res, next) => {
-  try { success(res, 'File', fileService.getById(req.params.fileId, req.projectRole)); } catch(e) { next(e); }
+
+exports.getById = async (req, res, next) => {
+  try {
+    const data = await fileService.getById(req.params.fileId, req.projectRole);
+    success(res, 'File', data);
+  } catch(e) { next(e); }
 };
-exports.updateCode = (req, res, next) => {
-  try { success(res, 'File updated', fileService.updateCode(req.params.fileId, req.body.current_code)); } catch(e) { next(e); }
+
+exports.updateCode = async (req, res, next) => {
+  try {
+    const data = await fileService.updateCode(req.params.fileId, req.body.current_code);
+    success(res, 'File updated', data);
+  } catch(e) { next(e); }
 };
-exports.remove = (req, res, next) => {
-  try { success(res, 'File deleted', fileService.remove(req.params.fileId, req.user.id)); } catch(e) { next(e); }
+
+exports.remove = async (req, res, next) => {
+  try {
+    const data = await fileService.remove(req.params.fileId, req.user.id);
+    success(res, 'File deleted', data);
+  } catch(e) { next(e); }
 };
-exports.listVersions = (req, res, next) => {
-  try { success(res, 'Versions', fileService.listVersions(req.params.fileId)); } catch(e) { next(e); }
+
+exports.listVersions = async (req, res, next) => {
+  try {
+    const data = await fileService.listVersions(req.params.fileId);
+    success(res, 'Versions', data);
+  } catch(e) { next(e); }
 };
-exports.createVersion = (req, res, next) => {
-  try { success(res, 'Version created', fileService.createVersion(req.params.fileId, req.body, req.user.id), 201); } catch(e) { next(e); }
+
+exports.createVersion = async (req, res, next) => {
+  try {
+    const data = await fileService.createVersion(req.params.fileId, req.body, req.user.id);
+    success(res, 'Version created', data, 201);
+  } catch(e) { next(e); }
 };

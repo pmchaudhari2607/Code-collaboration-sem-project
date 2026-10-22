@@ -61,10 +61,38 @@
            <div class="card" style="border-color:var(--danger-text); background-color:rgba(239,68,68,0.05);">
               <div class="text-bold text-danger mb-1">Delete Account</div>
               <div class="text-small text-muted mb-3">Permanently delete your account and all owned projects. This action cannot be undone.</div>
-              <button class="btn btn-danger" onclick="alert('This action is disabled in the demo.')">Delete Account</button>
+              <button class="btn btn-danger" id="btn-open-delete-modal" onclick="UI.openModal('modal-delete-account')">Delete Account</button>
            </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Delete Account Confirmation Modal -->
+  <div class="modal-backdrop" id="modal-delete-account">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title text-danger">Delete Account</h3>
+        <button class="modal-close" onclick="UI.closeModal('modal-delete-account')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="form-delete-account">
+        <div class="modal-body">
+          <div class="alert alert-danger mb-3" style="background:rgba(239,68,68,0.1); border:1px solid var(--danger-text); border-radius:6px; padding:12px; font-size:13px; color:var(--text-primary);">
+            <strong>Warning:</strong> This action is permanent and cannot be undone. All your owned projects, code files, and account data will be permanently deleted.
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm your password to proceed *</label>
+            <input type="password" id="delete-confirm-password" class="form-control" required placeholder="Enter your current password" autocomplete="current-password">
+          </div>
+          <div id="delete-account-error" class="text-danger text-small mt-2" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-delete-account')">Cancel</button>
+          <button type="submit" class="btn btn-danger" id="btn-confirm-delete">Permanently Delete Account</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -104,11 +132,10 @@
   </style>
 
   <script src="js/icons.js"></script>
-  <script src="js/mock-data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>
-  <script src="js/layout.js"></script>
+  <script src="js/layout.js?v=clean"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
        const darkModeToggle = document.getElementById('setting-dark-mode');
@@ -126,6 +153,36 @@
           const topbarToggle = document.getElementById('btn-theme-toggle');
           if (topbarToggle) topbarToggle.innerHTML = isDark ? window.icon('sun') : window.icon('moon');
        });
+
+       const deleteForm = document.getElementById('form-delete-account');
+       if (deleteForm) {
+          deleteForm.addEventListener('submit', async (e) => {
+             e.preventDefault();
+             const pw = document.getElementById('delete-confirm-password').value;
+             const errDiv = document.getElementById('delete-account-error');
+             const submitBtn = document.getElementById('btn-confirm-delete');
+             
+             errDiv.style.display = 'none';
+             submitBtn.disabled = true;
+             submitBtn.textContent = 'Deleting...';
+             
+             try {
+                await Store.deleteCurrentUser(pw);
+                UI.toast('Your account has been deleted.', 'success');
+                Store.setToken(null);
+                localStorage.removeItem('crh_current_user');
+                setTimeout(() => {
+                   window.location.href = 'login.html';
+                }, 1000);
+             } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.style.display = 'block';
+                UI.toast(err.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Permanently Delete Account';
+             }
+          });
+       }
     });
   </script>
 </body>
