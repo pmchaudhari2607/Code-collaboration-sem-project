@@ -1,6 +1,14 @@
 function mapDbError(err) {
   if (!err) return err;
 
+  const code = err.code || '';
+  if (['ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ETIMEDOUT', 'ENOTFOUND', 'ER_ACCESS_DENIED_ERROR', 'DB_DISABLED', 'INVALID_DB_NAME'].includes(code)) {
+    const connErr = new Error('Database service unavailable. Please check the MySQL database connection on port 3307.');
+    connErr.statusCode = 503;
+    connErr.code = code;
+    return connErr;
+  }
+
   const errno = err.errno;
   if (!errno) {
     return err;
