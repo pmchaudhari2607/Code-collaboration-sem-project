@@ -13,33 +13,6 @@ CodeReviewHub is a collaborative code review and project management portal built
 - **Backend**: Node.js, Express.js (RESTful API, bcrypt password hashing, JWT authentication)
 - **Database Layer**: MySQL with switchable service architecture (`DB_ENABLED=true` for MySQL, `DB_ENABLED=false` for in-memory testing)
 
----
-
-## ⚙️ Safe Local Configuration Setup
-
-The backend configuration is managed via `backend/.env`. A reference template is provided in [`backend/.env.example`](file:///backend/.env.example).
-
-### Safe Configuration Values (`backend/.env`):
-```env
-PORT=5000
-JWT_SECRET=your_secure_jwt_secret_at_least_32_characters
-JWT_EXPIRES_IN=7d
-ENABLE_DEV_MODE=false
-CORS_ORIGIN=http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:3000,http://localhost:3000
-
-# Database Configuration (Port 3307)
-DB_ENABLED=true
-DB_TARGET=dev
-DB_HOST=localhost
-DB_PORT=3307
-DB_NAME=code_review_portal_dev
-DB_NAME_TEST=code_review_portal_test
-DB_USER=crh_app
-DB_PASSWORD=your_db_password
-DB_POOL_LIMIT=10
-```
-
-> **Security Note**: Never commit actual database passwords or JWT secrets to Git. When database mode is active (`DB_ENABLED=true`), the server fails fast if `JWT_SECRET` is left as a weak default.
 
 ---
 
